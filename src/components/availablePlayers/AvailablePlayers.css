@@ -1,0 +1,14 @@
+.available-player-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    max-width: 80vw;
+    margin:auto;
+    margin-top: 1em;
+}
+
+button {
+    padding: 0.5em;
+    margin: 0.5em;
+}
