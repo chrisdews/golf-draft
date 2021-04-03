@@ -1,0 +1,14 @@
+.myTurn {
+    background-color: aquamarine;
+    width: 50vw
+
+}
+
+.notMyTurn {
+    background-color: firebrick;
+    width: 50vw
+}
+
+.selected-list{
+    width: 50vw
+}

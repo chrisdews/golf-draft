@@ -9,6 +9,8 @@ function AvailablePlayers({ availablePlayers, playerSelectionClick }) {
   };
 
   return (
+      <>
+      <h1>AVAILABLE PLAYERS</h1>
     <div className="available-player-container">
     {console.log(availablePlayers)}
       {availablePlayers.map((player, index) => (
@@ -18,6 +20,7 @@ function AvailablePlayers({ availablePlayers, playerSelectionClick }) {
         </button>
       ))}
     </div>
+    </>
   );
 }
 
