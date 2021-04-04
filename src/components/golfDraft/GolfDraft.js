@@ -17,7 +17,7 @@ function GolfDraft() {
   const [selectedPlayersB, setSelectedPlayersB] = useState([]);
   const [pickNo, setPickNo] = useState(0)
   const [pickBoi, setPickBoi] = useState(0)
-  const [whosTurn, setWhosTurn] = useState()
+  const [whosTurn, setWhosTurn] = useState(null)
   const [first, setFirst] = useState(true)
   const [reverseOrder, setReverseOrder] = useState(false)
   const [draftBois, setDraftBois] = useState(draftBoiz)
@@ -74,6 +74,7 @@ function GolfDraft() {
   }
 
   const playerSelectionClick = (id) => {
+    if (!whosTurn) return
     console.log(id);
     let player = { ...availablePlayers[id] };
     if (whosTurn === draftBois[0]) {
