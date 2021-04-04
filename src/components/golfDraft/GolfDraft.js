@@ -6,7 +6,7 @@ import SelectedPlayers from "../selectedPlayers";
 import './GolfDraft.css'
 
 import apiMock from "../../hardcodedContent/players";
-const draftBoiz = ['Dewsy', 'Xander', 'Phil']
+const draftBoiz = ['Dewsy', 'Xander']
 
 function GolfDraft() {
 
@@ -33,6 +33,7 @@ function GolfDraft() {
   useEffect(() => {
     if (pickNo === 0) return
     if (pickNo % draftBois.length === 0) {
+      console.log('reverse reverse')
       setReverseOrder(!reverseOrder)
     } else {
       nextPickBoi()
