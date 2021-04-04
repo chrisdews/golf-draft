@@ -8,7 +8,7 @@ import './GolfDraft.css'
 import apiMock from "../../hardcodedContent/players";
 const draftBoiz = ['Dewsy', 'Xander', 'Phil']
 
-const GolfDraft = () => {
+function GolfDraft() {
 
   const [isLoading, setIsLoading] = useState(true);
   const [availablePlayers, setAvailablePlayers] = useState([]);
