@@ -32,9 +32,7 @@ function GolfDraft() {
   const [isLoading, setIsLoading] = useState(true);
   const [availablePlayers, setAvailablePlayers] = useState([]);
   const [tournamentInfo, setTournamentInfo] = useState([]);
-  // const [selectedPlayersA, setSelectedPlayersA] = useState([]);
-  // const [selectedPlayersB, setSelectedPlayersB] = useState([]);
-  const [selectedPlayers, setSelectedPlayers] = useState(["why"]);
+  const [selectedPlayers, setSelectedPlayers] = useState({});
 
   const [pickNo, setPickNo] = useState(0);
   const [pickBoi, setPickBoi] = useState(0);
@@ -119,20 +117,11 @@ function GolfDraft() {
       player_id,
       username: whosTurn,
     });
-    if (whosTurn === draftBois[0]) {
-      // setSelectedPlayersA([...selectedPlayersA, player]);
-    } else if (whosTurn === draftBois[1]) {
-      // setSelectedPlayersB([...selectedPlayersB, player]);
-    }
     setAvailablePlayers(
       availablePlayers.filter((p) => p.player_id !== player.player_id)
     );
     // if the pick number is even, pick again, if it's odd change whosTurn
     setPickNo(pickNo + 1);
-    // if (pickNo % 2 === 1) {
-    //     let nextTurnBoi = draftBois.filter(boi => boi != whosTurn)
-    //     setWhosTurn(nextTurnBoi[0])
-    // }
   };
 
   const nextPickBoi = () => {
