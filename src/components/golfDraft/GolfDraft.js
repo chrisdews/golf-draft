@@ -6,8 +6,23 @@ import SelectedPlayers from "../selectedPlayers";
 import './GolfDraft.css'
 
 import apiMock from "../../hardcodedContent/players";
+const draftBoiz = ['Dewsy', 'Xander']
 
-const GolfDraft = () => {
+function GolfDraft() {
+
+  const [isLoading, setIsLoading] = useState(true);
+  const [availablePlayers, setAvailablePlayers] = useState([]);
+  const [tournamentInfo, setTournamentInfo] = useState([]);
+  const [selectedPlayersA, setSelectedPlayersA] = useState([]);
+  const [selectedPlayersB, setSelectedPlayersB] = useState([]);
+  const [pickNo, setPickNo] = useState(0)
+  const [pickBoi, setPickBoi] = useState(0)
+  const [whosTurn, setWhosTurn] = useState(null)
+  const [first, setFirst] = useState(true)
+  const [reverseOrder, setReverseOrder] = useState(false)
+  const [draftBois, setDraftBois] = useState(draftBoiz)
+  
+
   useEffect(() => {
     // getTournamentData();
     setAvailablePlayers(apiMock.results.entry_list);
@@ -15,14 +30,24 @@ const GolfDraft = () => {
     setIsLoading(false);
   }, []);
 
-  const [isLoading, setIsLoading] = useState(true);
-  const [availablePlayers, setAvailablePlayers] = useState([]);
-  const [tournamentInfo, setTournamentInfo] = useState([]);
-  const [selectedPlayersA, setSelectedPlayersA] = useState([]);
-  const [selectedPlayersB, setSelectedPlayersB] = useState([]);
-  const [pickNo, setPickNo] = useState(1)
-  const [whosTurn, setWhosTurn] = useState()
-  const draftBois = ['Dewsy', 'Xander']
+  useEffect(() => {
+    if (pickNo === 0) return
+    if (pickNo % draftBois.length === 0) {
+      console.log('reverse reverse')
+      setReverseOrder(!reverseOrder)
+    } else {
+      nextPickBoi()
+    }
+  }, [pickNo])
+
+  useEffect(() => {
+    if (pickBoi === 0 && first) {
+      setFirst(false)
+      return
+    }
+    setWhosTurn(draftBois[pickBoi])
+  }, [pickBoi])
+
 
   const getTournamentData = () => {
     fetch("https://golf-leaderboard-data.p.rapidapi.com/entry-list/279", {
@@ -43,16 +68,13 @@ const GolfDraft = () => {
   };
 
   const coinToss = () => {
-    if (Math.random() < 0.50){
-        setWhosTurn(draftBois[0])
-        return true
-    } else {
-        setWhosTurn(draftBois[1])
-        return false
-    }
+    const newDraftBois = draftBoiz.sort(() => Math.random() - 0.5)
+    setDraftBois(newDraftBois)
+    setWhosTurn(newDraftBois[0])
   }
 
   const playerSelectionClick = (id) => {
+    if (!whosTurn) return
     console.log(id);
     let player = { ...availablePlayers[id] };
     if (whosTurn === draftBois[0]) {
@@ -64,13 +86,21 @@ const GolfDraft = () => {
       availablePlayers.filter((p) => p.player_id !== player.player_id)
     );
     // if the pick number is even, pick again, if it's odd change whosTurn
-    if (pickNo % 2 === 1) {
-        let nextTurnBoi = draftBois.filter(boi => boi != whosTurn)
-        setWhosTurn(nextTurnBoi[0])
-    }
     setPickNo(pickNo +1)
-
+    // if (pickNo % 2 === 1) {
+    //     let nextTurnBoi = draftBois.filter(boi => boi != whosTurn)
+    //     setWhosTurn(nextTurnBoi[0])
+    // }
   };
+
+
+  const nextPickBoi = () => {
+    if (reverseOrder) {
+      setPickBoi(pickBoi - 1)
+    } else {
+      setPickBoi(pickBoi + 1)
+    }
+  }
 
   return (
     <div>
@@ -79,7 +109,7 @@ const GolfDraft = () => {
           <Header tournamentInfo={tournamentInfo} />
           <button onClick={() => {coinToss()}}>COIN TOSS</button>
           <div className="selected-players-container">
-          <div>Pick Number: {pickNo}</div>
+          <div>Pick Number: {pickNo + 1}</div>
           <div className="selected-container">
           <SelectedPlayers selectedPlayers={selectedPlayersA} draftBoi={draftBois[0]} whosTurn={whosTurn} />
           <SelectedPlayers selectedPlayers={selectedPlayersB} draftBoi={draftBois[1]} whosTurn={whosTurn}/>
