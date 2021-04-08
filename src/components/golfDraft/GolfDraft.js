@@ -12,7 +12,7 @@ import "./GolfDraft.css";
 import apiMock from "../../hardcodedContent/players";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyDmZJexbqJH5n5nCwTmAslR3VZ3v6uOFxw",
+  apiKey: process.env.REACT_APP_FIREBASE_KEY,
   authDomain: "golf-draft-1e6c3.firebaseapp.com",
   databaseURL:
     "https://golf-draft-1e6c3-default-rtdb.europe-west1.firebasedatabase.app",
