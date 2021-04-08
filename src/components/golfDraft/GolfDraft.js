@@ -10,7 +10,8 @@ import AvailablePlayers from "../availablePlayers";
 import Header from "../header";
 import SelectedPlayers from "../selectedPlayers";
 import "./GolfDraft.css";
-import apiMock from "../../hardcodedContent/players";
+// import apiMock from "../../hardcodedContent/players";
+// import leaderboard from "../../hardcodedContent/leaderboard";
 
 const firebaseConfig = {
   apiKey: process.env.REACT_APP_FIREBASE_KEY,
@@ -35,7 +36,7 @@ function GolfDraft() {
   const [availablePlayers, setAvailablePlayers] = useState([]);
   const [tournamentInfo, setTournamentInfo] = useState([]);
   const [selectedPlayers, setSelectedPlayers] = useState({});
-
+  const [liveLeaderboard, setLiveLeaderboard] = useState();
   const [pickNo, setPickNo] = useState(0);
   const [pickBoi, setPickBoi] = useState(0);
   const [whosTurn, setWhosTurn] = useState(null);
@@ -44,15 +45,15 @@ function GolfDraft() {
   const [draftBois, setDraftBois] = useState(draftBoiz);
 
   useEffect(() => {
-    // getTournamentData();
-    setAvailablePlayers(apiMock.results.entry_list);
-    setTournamentInfo(apiMock.results.tournament);
+    getTournamentPlayerData();
+    getTournamentLiveLeaderboard();
+    // setAvailablePlayers(apiMock.results.entry_list);
+    // setTournamentInfo(apiMock.results.tournament);
+    // setLiveLeaderboard(leaderboard);
     getSelectedPlayers();
-    setIsLoading(false);
   }, []);
-  
-  useEffect(() => {
 
+  useEffect(() => {
     if (pickNo === 0) return;
     if (pickNo % draftBois.length === 0) {
       setReverseOrder(!reverseOrder);
@@ -87,8 +88,8 @@ function GolfDraft() {
     database.ref("drafts/" + draftId).update(obj);
   };
 
-  const getTournamentData = () => {
-    fetch("https://golf-leaderboard-data.p.rapidapi.com/entry-list/279", {
+  const getTournamentPlayerData = async () => {
+    await fetch("https://golf-leaderboard-data.p.rapidapi.com/entry-list/279", {
       method: "GET",
       headers: {
         "x-rapidapi-key": process.env.REACT_APP_API_KEY,
@@ -96,9 +97,30 @@ function GolfDraft() {
       },
     })
       .then((res) => res.json())
-      .then((result) => {
-        setTournamentInfo(result.results.tournament);
-        setAvailablePlayers(result.results.entry_list);
+      .then((res) => {
+        setTournamentInfo(res.results.tournament);
+        setAvailablePlayers(res.results.entry_list);
+      })
+      .catch((err) => {
+        console.error(err);
+      });
+  };
+
+  const getTournamentLiveLeaderboard = async () => {
+    await fetch(
+      "https://golf-leaderboard-data.p.rapidapi.com/leaderboard/279",
+      {
+        method: "GET",
+        headers: {
+          "x-rapidapi-key": process.env.REACT_APP_API_KEY,
+          "x-rapidapi-host": "golf-leaderboard-data.p.rapidapi.com",
+        },
+      }
+    )
+      .then((res) => res.json())
+      .then((res) => {
+        setLiveLeaderboard(res.results.leaderboard);
+        setIsLoading(false);
       })
       .catch((err) => {
         console.error(err);
@@ -135,7 +157,8 @@ function GolfDraft() {
     <div>
       {!isLoading && (
         <>
-          <Header tournamentInfo={tournamentInfo} />
+          <Header tournamentInfo={tournamentInfo} leader={liveLeaderboard[0]} />
+
           <button
             onClick={() => {
               coinToss();
@@ -143,6 +166,7 @@ function GolfDraft() {
           >
             COIN TOSS
           </button>
+
           <div className="selected-players-container">
             <div>Pick Number: {pickNo + 1}</div>
             <div className="selected-container">
@@ -152,13 +176,14 @@ function GolfDraft() {
                   selectedPlayers={selectedPlayers}
                   draftBoi={draftBoi}
                   whosTurn={whosTurn}
+                  liveLeaderboard={liveLeaderboard}
                 />
               ))}
             </div>
           </div>
+
           {availablePlayers && (
             <AvailablePlayers
-              isLoading={isLoading}
               availablePlayers={availablePlayers}
               playerSelectionClick={playerSelectionClick}
             />
