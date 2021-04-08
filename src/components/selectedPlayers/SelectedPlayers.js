@@ -1,6 +1,7 @@
 import React from "react";
 import PropTypes from "prop-types";
 import "./SelectedPlayers.css";
+import countryIsoConverter from '../../helpers/countryIsoCoverter'
 
 const SelectedPlayers = ({ selectedPlayers, draftBoi, whosTurn }) => {
   const turnIndicator = () => {
@@ -13,25 +14,23 @@ const SelectedPlayers = ({ selectedPlayers, draftBoi, whosTurn }) => {
 
   const pickSorter = () => {
     let sortedPlayers = [];
-    for (const property in selectedPlayers) {
-      if (selectedPlayers[property].username === draftBoi) {
-        sortedPlayers.push(
-          `${selectedPlayers[property].first_name} ${selectedPlayers[property].last_name}`
-        );
+    for (const pick in selectedPlayers){
+      if (selectedPlayers[pick].username === draftBoi){
+        sortedPlayers.push(selectedPlayers[pick])
       }
     }
-    return sortedPlayers;
+    return sortedPlayers
   };
 
   return (
     <>
       <div className="selected-list">
         <h1 className={turnIndicator()}>{draftBoi}'s Players</h1>
-        {pickSorter().map((player, index) => (
-          <button key={index}>
-            <div>{`${index+1}. ${player}`}</div>
-        </button>
+        <ol>
+        {pickSorter().map((pick, index) => (
+            <li key={index}>{`${pick.player.first_name} ${pick.player.last_name} `}<img src={`https://www.countryflags.io/${countryIsoConverter(pick.player.country)}/shiny/32.png`}></img></li>
         ))}
+        </ol>
       </div>
     </>
   );
