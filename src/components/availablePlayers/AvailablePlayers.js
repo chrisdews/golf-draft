@@ -12,7 +12,6 @@ function AvailablePlayers({ availablePlayers, playerSelectionClick }) {
       <>
       <h1>AVAILABLE PLAYERS</h1>
     <div className="available-player-container">
-    {console.log(availablePlayers)}
       {availablePlayers.map((player, index) => (
         <button onClick={() => clickHandler(index)} key={index}>
           <div>{`${player.first_name} ${player.last_name}`}</div>
