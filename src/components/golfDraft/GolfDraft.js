@@ -10,8 +10,8 @@ import AvailablePlayers from "../availablePlayers";
 import Header from "../header";
 import SelectedPlayers from "../selectedPlayers";
 import "./GolfDraft.css";
-// import apiMock from "../../hardcodedContent/players";
-// import leaderboard from "../../hardcodedContent/leaderboard";
+import apiMock from "../../hardcodedContent/players";
+import leaderboardMock from "../../hardcodedContent/leaderboard";
 
 const firebaseConfig = {
   apiKey: process.env.REACT_APP_FIREBASE_KEY,
@@ -29,14 +29,14 @@ firebase.initializeApp(firebaseConfig);
 
 const database = firebase.database();
 const draftBoiz = ["Dewsy", "Xander"];
-const draftId = 1000001;
+const draftId = 8000001;
 
 function GolfDraft() {
   const [isLoading, setIsLoading] = useState(true);
   const [availablePlayers, setAvailablePlayers] = useState([]);
   const [tournamentInfo, setTournamentInfo] = useState([]);
   const [selectedPlayers, setSelectedPlayers] = useState({});
-  const [liveLeaderboard, setLiveLeaderboard] = useState();
+  const [liveLeaderboard, setLiveLeaderboard] = useState([]);
   const [pickNo, setPickNo] = useState(0);
   const [pickBoi, setPickBoi] = useState(0);
   const [whosTurn, setWhosTurn] = useState(null);
@@ -44,13 +44,16 @@ function GolfDraft() {
   const [reverseOrder, setReverseOrder] = useState(false);
   const [draftBois, setDraftBois] = useState(draftBoiz);
 
+  let leaderboard = leaderboardMock.leaderboard;
+
   useEffect(() => {
-    getTournamentPlayerData();
-    getTournamentLiveLeaderboard();
-    // setAvailablePlayers(apiMock.results.entry_list);
-    // setTournamentInfo(apiMock.results.tournament);
-    // setLiveLeaderboard(leaderboard);
+    // getTournamentPlayerData();
+    // getTournamentLiveLeaderboard();
+    setAvailablePlayers(apiMock.results.entry_list);
+    setTournamentInfo(apiMock.results.tournament);
+    setLiveLeaderboard(leaderboard);
     getSelectedPlayers();
+    setIsLoading(false);
   }, []);
 
   useEffect(() => {
@@ -89,7 +92,7 @@ function GolfDraft() {
   };
 
   const getTournamentPlayerData = async () => {
-    await fetch("https://golf-leaderboard-data.p.rapidapi.com/entry-list/279", {
+    await fetch("https://golf-leaderboard-data.p.rapidapi.com/entry-list/285", {
       method: "GET",
       headers: {
         "x-rapidapi-key": process.env.REACT_APP_API_KEY,
@@ -98,8 +101,8 @@ function GolfDraft() {
     })
       .then((res) => res.json())
       .then((res) => {
-        setTournamentInfo(res.results.tournament);
-        setAvailablePlayers(res.results.entry_list);
+        // setTournamentInfo(res.results.tournament);
+        // setAvailablePlayers(res.results.entry_list);
       })
       .catch((err) => {
         console.error(err);
@@ -108,7 +111,7 @@ function GolfDraft() {
 
   const getTournamentLiveLeaderboard = async () => {
     await fetch(
-      "https://golf-leaderboard-data.p.rapidapi.com/leaderboard/279",
+      "https://golf-leaderboard-data.p.rapidapi.com/leaderboard/285",
       {
         method: "GET",
         headers: {
@@ -119,12 +122,18 @@ function GolfDraft() {
     )
       .then((res) => res.json())
       .then((res) => {
-        setLiveLeaderboard(res.results.leaderboard);
+        // setLiveLeaderboard(res.results.leaderboard);
         setIsLoading(false);
       })
       .catch((err) => {
         console.error(err);
       });
+  };
+
+  const resetDraft = async () => {
+    if (window.confirm("Are you sure you wish to delete this item?")) {
+      database.ref("drafts/" + draftId).remove();
+    }
   };
 
   const coinToss = () => {
@@ -190,6 +199,8 @@ function GolfDraft() {
           )}
         </>
       )}
+
+      <button onClick={resetDraft}>delete</button>
     </div>
   );
 }

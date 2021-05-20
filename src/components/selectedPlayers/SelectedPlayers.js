@@ -38,7 +38,8 @@ const SelectedPlayers = ({ selectedPlayers, draftBoi, whosTurn, liveLeaderboard 
             <li key={index}>
             <img src={`https://www.countryflags.io/${countryIsoConverter(pick.player.country)}/shiny/24.png`}></img>
             {`  ${pick.player.first_name} ${pick.player.last_name}  `}
-            <span>{liveScoreMatcher(pick.player.player_id)}</span>
+            {/* <span>{liveScoreMatcher(pick.player.player_id)}</span> */}
+            <span>-3</span>
             </li>
         ))}
         </ol>
