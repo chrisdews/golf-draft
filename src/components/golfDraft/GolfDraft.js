@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { Row, Col } from "antd";
 import PropTypes from "prop-types";
 import firebase from "firebase/app";
 import "firebase/analytics";
@@ -9,6 +10,7 @@ import "firebase/database";
 import AvailablePlayers from "../availablePlayers";
 import Header from "../header";
 import SelectedPlayers from "../selectedPlayers";
+import DraftHistory from "../draftHistory";
 import "./GolfDraft.css";
 import apiMock from "../../hardcodedContent/players";
 import leaderboardMock from "../../hardcodedContent/leaderboard";
@@ -35,7 +37,7 @@ function GolfDraft() {
   const [isLoading, setIsLoading] = useState(true);
   const [availablePlayers, setAvailablePlayers] = useState([]);
   const [tournamentInfo, setTournamentInfo] = useState([]);
-  const [selectedPlayers, setSelectedPlayers] = useState({});
+  const [selectedPlayers, setSelectedPlayers] = useState([]);
   const [liveLeaderboard, setLiveLeaderboard] = useState([]);
   const [pickNo, setPickNo] = useState(0);
   const [pickBoi, setPickBoi] = useState(0);
@@ -53,7 +55,6 @@ function GolfDraft() {
     setTournamentInfo(apiMock.results.tournament);
     setLiveLeaderboard(leaderboard);
     getSelectedPlayers();
-    setIsLoading(false);
   }, []);
 
   useEffect(() => {
@@ -73,12 +74,13 @@ function GolfDraft() {
     setWhosTurn(draftBois[pickBoi]);
   }, [pickBoi]);
 
-  const getSelectedPlayers = async () => {
+  const getSelectedPlayers = () => {
     const selectedPlayersRef = database.ref("drafts/" + draftId);
     selectedPlayersRef.on("value", (snapshot) => {
       const data = snapshot.val();
       setSelectedPlayers(data);
     });
+    setIsLoading(false);
   };
 
   const writePickData = (draftId, pickNoAdjusted, whosTurn, player) => {
@@ -143,8 +145,9 @@ function GolfDraft() {
   };
 
   const playerSelectionClick = (id) => {
-    if (!whosTurn) return;
+    // if (!whosTurn) return;
     let player = { ...availablePlayers[id] };
+    console.log(player)
     writePickData(draftId, pickNo + 1, whosTurn, player);
 
     setAvailablePlayers(
@@ -162,6 +165,8 @@ function GolfDraft() {
     }
   };
 
+  const style = { background: "#0092ff", padding: "8px 0" };
+
   return (
     <div>
       {!isLoading && (
@@ -176,7 +181,23 @@ function GolfDraft() {
             COIN TOSS
           </button>
 
-          <div className="selected-players-container">
+          <Row gutter={16}>
+            <Col className="gutter-row" span={12}>
+              {availablePlayers && (
+                <AvailablePlayers
+                  availablePlayers={availablePlayers}
+                  playerSelectionClick={playerSelectionClick}
+                />
+              )}
+            </Col>
+            <Col className="gutter-row" span={12}>
+              
+                <DraftHistory selectedPlayers={selectedPlayers} />
+              
+            </Col>
+          </Row>
+
+          {/* <div className="selected-players-container">
             <div>Pick Number: {pickNo + 1}</div>
             <div className="selected-container">
               {draftBois.map((draftBoi) => (
@@ -189,14 +210,7 @@ function GolfDraft() {
                 />
               ))}
             </div>
-          </div>
-
-          {availablePlayers && (
-            <AvailablePlayers
-              availablePlayers={availablePlayers}
-              playerSelectionClick={playerSelectionClick}
-            />
-          )}
+          </div> */}
         </>
       )}
 

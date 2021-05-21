@@ -1,5 +1,7 @@
-import "./App.css";
+// import "./App.css";
 import GolfDraft from "./components/golfDraft";
+
+import "antd/dist/antd.css";
 
 function App() {
   return (
