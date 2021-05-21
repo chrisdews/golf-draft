@@ -47,7 +47,7 @@ function AvailablePlayers({ availablePlayers, playerSelectionClick }) {
   ];
 
   const data = [];
-  for (let i = 1; i < availablePlayers.length; i++) {
+  for (let i = 0; i < availablePlayers.length; i++) {
     data.push({
       key: i,
       wr: "?",
@@ -73,6 +73,7 @@ function AvailablePlayers({ availablePlayers, playerSelectionClick }) {
         dataSource={data}
         pagination={{ pageSize: 50 }}
         scroll={{ y: 540 }}
+        size="small"
       />
     </div>
   );

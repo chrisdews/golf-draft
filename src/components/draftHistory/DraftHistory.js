@@ -31,15 +31,23 @@ function draftHistory({ selectedPlayers }) {
   const data = [];
 
   if (selectedPlayers) {
-    for (let i = selectedPlayers.length - 1; i > 0; i--) {
+    for (let i = 0; i < selectedPlayers.length; i++) {
+      let username = selectedPlayers[i].username;
+      let playername = selectedPlayers[i].player_last_name
+        ? `${selectedPlayers[i].player_first_name} ${selectedPlayers[i].player_last_name}`
+        : "";
+      let imageURL = selectedPlayers[i].player_country
+        ? `https://www.countryflags.io/${countryIsoConverter(
+            selectedPlayers[i].player_country
+          )}/shiny/24.png`
+        : "";
+      let pick = selectedPlayers[i].pick;
       data.push({
         key: i,
-        pick: selectedPlayers[i].pick,
-        player: `${selectedPlayers[i].player.first_name} ${selectedPlayers[i].player.last_name}`,
-        username: selectedPlayers[i].username,
-        imageURL: `https://www.countryflags.io/${countryIsoConverter(
-          selectedPlayers[i].player.country
-        )}/shiny/24.png`,
+        pick: pick,
+        player: playername,
+        username: username,
+        imageURL: imageURL,
       });
     }
   }
@@ -54,6 +62,7 @@ function draftHistory({ selectedPlayers }) {
         dataSource={data}
         pagination={{ pageSize: 50 }}
         scroll={{ y: 540 }}
+        size="small"
       />
       <Progress type="circle" percent={8} format={() => `${1} / ${12}`} />
       {/* base this on round number / final round */}

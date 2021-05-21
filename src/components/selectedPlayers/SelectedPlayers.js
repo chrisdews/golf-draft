@@ -1,6 +1,5 @@
 import React from "react";
 import PropTypes from "prop-types";
-import "./SelectedPlayers.css";
 import countryIsoConverter from '../../helpers/countryIsoCoverter'
 
 const SelectedPlayers = ({ selectedPlayers, draftBoi, whosTurn, liveLeaderboard }) => {
