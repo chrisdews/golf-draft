@@ -1,5 +1,5 @@
 import React from "react";
-import { Table } from "antd";
+import { Table, Progress } from "antd";
 import "antd/dist/antd.css";
 import countryIsoConverter from "../../helpers/countryIsoCoverter";
 
@@ -55,6 +55,8 @@ function draftHistory({ selectedPlayers }) {
         pagination={{ pageSize: 50 }}
         scroll={{ y: 540 }}
       />
+      <Progress type="circle" percent={8} format={() => `${1} / ${12}`} />
+      {/* base this on round number / final round */}
     </div>
   );
 }

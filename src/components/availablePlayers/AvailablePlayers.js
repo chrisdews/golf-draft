@@ -1,7 +1,7 @@
 import React from "react";
 import PropTypes from "prop-types";
 
-import { Table } from "antd";
+import { Table, Button } from "antd";
 import "antd/dist/antd.css";
 import countryIsoConverter from "../../helpers/countryIsoCoverter";
 
@@ -38,11 +38,11 @@ function AvailablePlayers({ availablePlayers, playerSelectionClick }) {
       title: "",
       dataIndex: "Button",
       width: 20,
-      render: () => <button onRow={(record) => ({
+      render: () => <Button onRow={(record) => ({
         onClick: () => {
           clickHandler(record.key);
         },
-      })}>select</button>,
+      })}>select</Button>,
     },
   ];
 

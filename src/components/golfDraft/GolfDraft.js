@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Row, Col } from "antd";
+import { Row, Col, Button } from "antd";
 import PropTypes from "prop-types";
 import firebase from "firebase/app";
 import "firebase/analytics";
@@ -45,6 +45,7 @@ function GolfDraft() {
   const [first, setFirst] = useState(true);
   const [reverseOrder, setReverseOrder] = useState(false);
   const [draftBois, setDraftBois] = useState(draftBoiz);
+  const [draftCompleted, setDraftCompleted] = useState(false);
 
   let leaderboard = leaderboardMock.leaderboard;
 
@@ -147,7 +148,7 @@ function GolfDraft() {
   const playerSelectionClick = (id) => {
     // if (!whosTurn) return;
     let player = { ...availablePlayers[id] };
-    console.log(player)
+    console.log(player);
     writePickData(draftId, pickNo + 1, whosTurn, player);
 
     setAvailablePlayers(
@@ -165,37 +166,33 @@ function GolfDraft() {
     }
   };
 
-  const style = { background: "#0092ff", padding: "8px 0" };
-
   return (
     <div>
       {!isLoading && (
         <>
           <Header tournamentInfo={tournamentInfo} leader={liveLeaderboard[0]} />
 
-          <button
+          <Button
             onClick={() => {
-              coinToss();
+              setDraftCompleted(!draftCompleted);
             }}
           >
-            COIN TOSS
-          </button>
+            {draftCompleted ? "show leaderboard" : "show draft"}
+          </Button>
 
           <Row gutter={16}>
             <Col className="gutter-row" span={12}>
-              {availablePlayers && (
-                <AvailablePlayers
-                  availablePlayers={availablePlayers}
-                  playerSelectionClick={playerSelectionClick}
-                />
-              )}
+              <AvailablePlayers
+                availablePlayers={availablePlayers}
+                playerSelectionClick={playerSelectionClick}
+              />
             </Col>
             <Col className="gutter-row" span={12}>
-              
-                <DraftHistory selectedPlayers={selectedPlayers} />
-              
+              <DraftHistory selectedPlayers={selectedPlayers} />
             </Col>
           </Row>
+
+          {draftCompleted ? 'show modal' : 'hide modal'}
 
           {/* <div className="selected-players-container">
             <div>Pick Number: {pickNo + 1}</div>
