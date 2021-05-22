@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { Row, Col, Button, Progress } from "antd";
 import PropTypes from "prop-types";
 import firebase from "firebase/app";
 import "firebase/analytics";
@@ -8,69 +9,42 @@ import "firebase/database";
 
 import AvailablePlayers from "../availablePlayers";
 import Header from "../header";
-import SelectedPlayers from "../selectedPlayers";
-import "./GolfDraft.css";
-// import apiMock from "../../hardcodedContent/players";
-// import leaderboard from "../../hardcodedContent/leaderboard";
+import LiveLeaderboard from "../liveLeaderboard";
+import DraftHistory from "../draftHistory";
+import apiMock from "../../hardcodedContent/players";
+import leaderboardMock from "../../hardcodedContent/leaderboard";
 
 const firebaseConfig = {
   apiKey: process.env.REACT_APP_FIREBASE_KEY,
   authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
   databaseURL: process.env.REACT_APP_FIREBASE_DB_URL,
-  // projectId: process.env.REACT_APP_PROJECT_ID,
   storageBucket: process.env.REACT_APP_STORAGE_BUCKET,
-  // messagingSenderId: process.env.REACT_APP_MESSAGING_SENDER_ID,
-  // appId: process.env.REACT_APP_APP_ID,
-  // measurementId: process.env.REACT_APP_MEASUREMENT_ID
 };
 
+const useHardCodedContent = process.env.REACT_APP_MOCK_ENV === "mock";
 firebase.initializeApp(firebaseConfig);
-// const db = firebase.firestore();
 
 const database = firebase.database();
-const draftBoiz = ["Dewsy", "Xander"];
-const draftId = 1000001;
+const draftBois = ["Dewsy", "Xander"];
+const draftId = useHardCodedContent ? 8000001 : 1000002;
 
 function GolfDraft() {
   const [isLoading, setIsLoading] = useState(true);
   const [availablePlayers, setAvailablePlayers] = useState([]);
   const [tournamentInfo, setTournamentInfo] = useState([]);
-  const [selectedPlayers, setSelectedPlayers] = useState({});
-  const [liveLeaderboard, setLiveLeaderboard] = useState();
+  const [selectedPlayers, setSelectedPlayers] = useState([]);
+  const [liveLeaderboard, setLiveLeaderboard] = useState([]);
   const [pickNo, setPickNo] = useState(0);
-  const [pickBoi, setPickBoi] = useState(0);
-  const [whosTurn, setWhosTurn] = useState(null);
-  const [first, setFirst] = useState(true);
-  const [reverseOrder, setReverseOrder] = useState(false);
-  const [draftBois, setDraftBois] = useState(draftBoiz);
+  const [whosTurn, setWhosTurn] = useState("");
+  const [showLeaderboard, setShowLeaderboard] = useState(false);
 
   useEffect(() => {
     getTournamentPlayerData();
     getTournamentLiveLeaderboard();
-    // setAvailablePlayers(apiMock.results.entry_list);
-    // setTournamentInfo(apiMock.results.tournament);
-    // setLiveLeaderboard(leaderboard);
     getSelectedPlayers();
   }, []);
 
-  useEffect(() => {
-    if (pickNo === 0) return;
-    if (pickNo % draftBois.length === 0) {
-      setReverseOrder(!reverseOrder);
-    } else {
-      nextPickBoi();
-    }
-  }, [pickNo]);
-
-  useEffect(() => {
-    if (pickBoi === 0 && first) {
-      setFirst(false);
-      return;
-    }
-    setWhosTurn(draftBois[pickBoi]);
-  }, [pickBoi]);
-
-  const getSelectedPlayers = async () => {
+  const getSelectedPlayers = () => {
     const selectedPlayersRef = database.ref("drafts/" + draftId);
     selectedPlayersRef.on("value", (snapshot) => {
       const data = snapshot.val();
@@ -79,17 +53,25 @@ function GolfDraft() {
   };
 
   const writePickData = (draftId, pickNoAdjusted, whosTurn, player) => {
-    let obj = {};
-    obj[pickNoAdjusted] = {
-      pick: pickNoAdjusted,
-      username: whosTurn,
-      player: player,
-    };
-    database.ref("drafts/" + draftId).update(obj);
+    const selectedPlayersRef = database.ref("drafts/" + draftId);
+
+    // selectedPlayersRef.on("child_changed", function(snapshot) {
+    //   const changedPick = snapshot.val();
+    //   console.log("The updated player title is " + changedPick.player);
+    // });
+    // we can use this to push updates to clients
+
+    const updatePick = selectedPlayersRef.child(pickNoAdjusted);
+    updatePick.update({
+      player_country: player.country,
+      player_first_name: player.first_name,
+      player_last_name: player.last_name,
+      player_id: player.player_id,
+    });
   };
 
   const getTournamentPlayerData = async () => {
-    await fetch("https://golf-leaderboard-data.p.rapidapi.com/entry-list/279", {
+    await fetch("https://golf-leaderboard-data.p.rapidapi.com/entry-list/285", {
       method: "GET",
       headers: {
         "x-rapidapi-key": process.env.REACT_APP_API_KEY,
@@ -98,8 +80,14 @@ function GolfDraft() {
     })
       .then((res) => res.json())
       .then((res) => {
-        setTournamentInfo(res.results.tournament);
-        setAvailablePlayers(res.results.entry_list);
+        if (useHardCodedContent) {
+          setTournamentInfo(apiMock.results.tournament);
+          setAvailablePlayers(apiMock.results.entry_list);
+        } else {
+          setTournamentInfo(res.results.tournament);
+          setAvailablePlayers(res.results.entry_list);
+        }
+        setIsLoading(false);
       })
       .catch((err) => {
         console.error(err);
@@ -108,7 +96,7 @@ function GolfDraft() {
 
   const getTournamentLiveLeaderboard = async () => {
     await fetch(
-      "https://golf-leaderboard-data.p.rapidapi.com/leaderboard/279",
+      "https://golf-leaderboard-data.p.rapidapi.com/leaderboard/285",
       {
         method: "GET",
         headers: {
@@ -119,7 +107,13 @@ function GolfDraft() {
     )
       .then((res) => res.json())
       .then((res) => {
-        setLiveLeaderboard(res.results.leaderboard);
+        if (useHardCodedContent) {
+          let leaderboard = leaderboardMock.leaderboard;
+          setLiveLeaderboard(leaderboard);
+        } else {
+          setLiveLeaderboard(res.results.leaderboard);
+        }
+
         setIsLoading(false);
       })
       .catch((err) => {
@@ -127,16 +121,44 @@ function GolfDraft() {
       });
   };
 
-  const coinToss = () => {
-    const newDraftBois = draftBoiz.sort(() => Math.random() - 0.5);
-    setDraftBois(newDraftBois);
-    setWhosTurn(newDraftBois[0]);
+  const resetDraft = async () => {
+    if (window.confirm("Are you sure you wish to delete this item?")) {
+      database.ref("drafts/" + draftId).remove();
+    }
+  };
+
+  const getUsername = (index) => {
+    let round = 1;
+    let pick = 1;
+    let overall = index + 1;
+    let team_pick = 1;
+    let total_rounds = 12;
+    let total_teams = draftBois.length;
+
+    round = Math.floor((overall - 1) / total_teams + 1);
+    pick = ((overall - 1) % total_teams) + 1;
+    team_pick = round % 2 ? pick : round * total_teams - overall + 1;
+    return draftBois[team_pick - 1];
+  };
+
+  const createInitialDraftArray = (roundsNum) => {
+    let picksNum = roundsNum * draftBois.length;
+    return Array.from({ length: picksNum }).map((_, index) => {
+      const id = index + 1;
+      return { id, pick: id, player: "", username: getUsername(index) };
+    });
+  };
+
+  const startDraft = () => {
+    setWhosTurn(draftBois[0]);
+    database.ref("drafts/" + draftId).update(createInitialDraftArray(12));
+    // make the 12 a user selection
   };
 
   const playerSelectionClick = (id) => {
     if (!whosTurn) return;
     let player = { ...availablePlayers[id] };
-    writePickData(draftId, pickNo + 1, whosTurn, player);
+    writePickData(draftId, pickNo, whosTurn, player);
 
     setAvailablePlayers(
       availablePlayers.filter((p) => p.player_id !== player.player_id)
@@ -145,51 +167,76 @@ function GolfDraft() {
     setPickNo(pickNo + 1);
   };
 
-  const nextPickBoi = () => {
-    if (reverseOrder) {
-      setPickBoi(pickBoi - 1);
-    } else {
-      setPickBoi(pickBoi + 1);
-    }
-  };
-
   return (
     <div>
       {!isLoading && (
         <>
-          <Header tournamentInfo={tournamentInfo} leader={liveLeaderboard[0]} />
-
-          <button
+          <Row gutter={16}>
+            <Col className="gutter-row" span={12}>
+              {liveLeaderboard[0] && (
+                <Header
+                  tournamentInfo={tournamentInfo}
+                  leader={liveLeaderboard}
+                />
+              )}
+            </Col>
+            <Col className="gutter-row" span={12}>
+              {selectedPlayers && (
+                <>
+                  <Progress
+                    type="circle"
+                    percent={(pickNo / selectedPlayers.length) * 100}
+                    format={() => `${pickNo} / ${selectedPlayers.length}`}
+                  />
+                  <h5>Draft Progress</h5>
+                </>
+              )}
+              {/* base this on round number / final round */}
+            </Col>
+          </Row>
+          <Button
             onClick={() => {
-              coinToss();
+              startDraft();
             }}
           >
-            COIN TOSS
-          </button>
+            'Start Draft'
+          </Button>
+          <Button
+            onClick={() => {
+              setShowLeaderboard(!showLeaderboard);
+            }}
+          >
+            {showLeaderboard ? "show Draft" : "show Leaderboard"}
+          </Button>
 
-          <div className="selected-players-container">
-            <div>Pick Number: {pickNo + 1}</div>
-            <div className="selected-container">
-              {draftBois.map((draftBoi) => (
-                <SelectedPlayers
-                  key={draftBoi}
-                  selectedPlayers={selectedPlayers}
-                  draftBoi={draftBoi}
-                  whosTurn={whosTurn}
-                  liveLeaderboard={liveLeaderboard}
+          {!showLeaderboard && (
+            <Row gutter={16}>
+              <Col className="gutter-row" span={12}>
+                <AvailablePlayers
+                  availablePlayers={availablePlayers}
+                  playerSelectionClick={playerSelectionClick}
                 />
-              ))}
-            </div>
-          </div>
+              </Col>
+              <Col className="gutter-row" span={12}>
+                <DraftHistory selectedPlayers={selectedPlayers} />
+              </Col>
+            </Row>
+          )}
 
-          {availablePlayers && (
-            <AvailablePlayers
-              availablePlayers={availablePlayers}
-              playerSelectionClick={playerSelectionClick}
-            />
+          {showLeaderboard && (
+            <Row gutter={16}>
+              <Col className="gutter-row" span={18}>
+                <LiveLeaderboard
+                  liveLeaderboard={liveLeaderboard}
+                  selectedPlayers={selectedPlayers}
+                />
+              </Col>
+            </Row>
           )}
         </>
       )}
+
+      <button onClick={resetDraft}>delete</button>
     </div>
   );
 }

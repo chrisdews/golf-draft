@@ -79,9 +79,21 @@ const apiMock = {
         first_name: "Sangmoon",
         last_name: "Bae",
         country: "KOR",
-      }
+      },
+      {
+        player_id: 67231,
+        first_name: "Justin",
+        last_name: "Rose",
+        country: "ENG",
+      },
+      {
+        player_id: 82948,
+        first_name: "Brian",
+        last_name: "Harman",
+        country: "USA",
+      },
     ],
   },
 };
 
-export default apiMock
+export default apiMock;
