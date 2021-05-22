@@ -17,7 +17,7 @@ function LiveLeaderboard({ liveLeaderboard, selectedPlayers }) {
     },
     {
       title: "Country",
-      dataIndex: "imageURL",
+      dataIndex: "flagImage",
       width: 20,
       render: (theImageURL) => <img alt={theImageURL} src={theImageURL} />,
     },
@@ -41,25 +41,36 @@ function LiveLeaderboard({ liveLeaderboard, selectedPlayers }) {
   let data = [];
 
   for (let i = 0; i < liveLeaderboard.length; i++) {
-    let playerId = liveLeaderboard[i].player_id
-    let selected = selectedPlayers && selectedPlayers.find(selected => selected.player_id === playerId)
-    let owner
+    let playerId = liveLeaderboard[i].player_id;
+    let firstName = liveLeaderboard[i].first_name;
+    let lastName = liveLeaderboard[i].last_name;
+    let position = liveLeaderboard[i].position;
+    let flagImage = liveLeaderboard[i].country
+      ? `https://www.countryflags.io/${countryIsoConverter(
+          liveLeaderboard[i].country
+        )}/shiny/24.png`
+      : "";
+    let totalToPar = liveLeaderboard[i].total_to_par;
+    let holes_played = liveLeaderboard[i].holes_played
+    let selected =
+      selectedPlayers &&
+      selectedPlayers.find((selected) => selected.player_id === playerId);
+    let owner;
     if (selected) {
-         owner = selected.username
+      owner = selected.username;
     }
 
-    
-    data.push({
-      key: i,
-      position: liveLeaderboard[i].position,
-      player: `${liveLeaderboard[i].first_name} ${liveLeaderboard[i].last_name}`,
-      imageURL: `https://www.countryflags.io/${countryIsoConverter(
-        liveLeaderboard[i].country
-      )}/shiny/24.png`,
-      totalToPar: liveLeaderboard[i].total_to_par,
-      holesPlayed: liveLeaderboard[i].holes_played,
-      owner: owner,
-    });
+    if (lastName) {
+      data.push({
+        key: i,
+        position: position,
+        player: `${firstName} ${lastName}`,
+        flagImage: flagImage,
+        totalToPar: totalToPar,
+        holesPlayed: holes_played,
+        owner: owner,
+      });
+    }
   }
 
   return (

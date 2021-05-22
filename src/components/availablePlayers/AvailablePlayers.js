@@ -19,20 +19,22 @@ function AvailablePlayers({ availablePlayers, playerSelectionClick }) {
       width: 20,
     },
     {
+      title: "",
+      dataIndex: "flagImage",
+      width: 20,
+      render: (theImageURL) => <img alt={theImageURL} src={theImageURL} />,
+    },
+    {
       title: "Player",
       dataIndex: "player",
       width: 50,
-      render: text => <a onRow={(record) => ({
+      render: text => 
+      <a onRow={(record) => ({
         onClick: () => {
           clickHandler(record.key);
         },
       })}>{text}</a>,
-    },
-    {
-      title: "",
-      dataIndex: "imageURL",
-      width: 20,
-      render: (theImageURL) => <img alt={theImageURL} src={theImageURL} />,
+      
     },
     {
       title: "",
@@ -48,13 +50,19 @@ function AvailablePlayers({ availablePlayers, playerSelectionClick }) {
 
   const data = [];
   for (let i = 0; i < availablePlayers.length; i++) {
+
+    let worldRanking = 'TBC'
+    let firstName = availablePlayers[i].first_name
+    let lastName = availablePlayers[i].last_name
+    let flagImage = availablePlayers[i].country ? `https://www.countryflags.io/${countryIsoConverter(
+      availablePlayers[i].country
+    )}/shiny/24.png` : '';
+    
     data.push({
       key: i,
-      wr: "?",
-      player: `${availablePlayers[i].first_name} ${availablePlayers[i].last_name}`,
-      imageURL: `https://www.countryflags.io/${countryIsoConverter(
-        availablePlayers[i].country
-      )}/shiny/24.png`,
+      wr: worldRanking,
+      flagImage: flagImage,
+      player: `${firstName} ${lastName}`,
     });
   }
 

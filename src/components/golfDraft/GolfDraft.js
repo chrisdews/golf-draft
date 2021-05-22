@@ -9,10 +9,8 @@ import "firebase/database";
 
 import AvailablePlayers from "../availablePlayers";
 import Header from "../header";
-import SelectedPlayers from "../selectedPlayers";
 import LiveLeaderboard from "../liveLeaderboard";
 import DraftHistory from "../draftHistory";
-import "./GolfDraft.css";
 import apiMock from "../../hardcodedContent/players";
 import leaderboardMock from "../../hardcodedContent/leaderboard";
 
@@ -37,8 +35,7 @@ function GolfDraft() {
   const [selectedPlayers, setSelectedPlayers] = useState([]);
   const [liveLeaderboard, setLiveLeaderboard] = useState([]);
   const [pickNo, setPickNo] = useState(0);
-  const [whosTurn, setWhosTurn] = useState("Xander");
-  const [first, setFirst] = useState(true);
+  const [whosTurn, setWhosTurn] = useState("");
   const [showLeaderboard, setShowLeaderboard] = useState(false);
 
   useEffect(() => {
@@ -46,14 +43,6 @@ function GolfDraft() {
     getTournamentLiveLeaderboard();
     getSelectedPlayers();
   }, []);
-
-  // useEffect(() => {
-  //   if (pickBoi === 0 && first) {
-  //     setFirst(false);
-  //     return;
-  //   }
-  //   setWhosTurn(draftBois[pickBoi]);
-  // }, [pickBoi]);
 
   const getSelectedPlayers = () => {
     const selectedPlayersRef = database.ref("drafts/" + draftId);
@@ -178,19 +167,13 @@ function GolfDraft() {
     setPickNo(pickNo + 1);
   };
 
-  // const nextPickBoi = () => {
-  //   if (reverseOrder) {
-  //     setPickBoi(pickBoi - 1);
-  //   } else {
-  //     setPickBoi(pickBoi + 1);
-  //   }
-  // };
-
   return (
     <div>
       {!isLoading && (
         <>
-          {liveLeaderboard[0] && <Header tournamentInfo={tournamentInfo} leader={liveLeaderboard} />}
+          {liveLeaderboard[0] && (
+            <Header tournamentInfo={tournamentInfo} leader={liveLeaderboard} />
+          )}
           <Button
             onClick={() => {
               startDraft();
@@ -230,23 +213,6 @@ function GolfDraft() {
               </Col>
             </Row>
           )}
-
-          {showLeaderboard ? "show modal" : "hide modal"}
-
-          {/* <div className="selected-players-container">
-            <div>Pick Number: {pickNo + 1}</div>
-            <div className="selected-container">
-              {draftBois.map((draftBoi) => (
-                <SelectedPlayers
-                  key={draftBoi}
-                  selectedPlayers={selectedPlayers}
-                  draftBoi={draftBoi}
-                  whosTurn={whosTurn}
-                  liveLeaderboard={liveLeaderboard}
-                />
-              ))}
-            </div>
-          </div> */}
         </>
       )}
 
