@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Row, Col, Button } from "antd";
+import { Row, Col, Button, Progress } from "antd";
 import PropTypes from "prop-types";
 import firebase from "firebase/app";
 import "firebase/analytics";
@@ -171,9 +171,29 @@ function GolfDraft() {
     <div>
       {!isLoading && (
         <>
-          {liveLeaderboard[0] && (
-            <Header tournamentInfo={tournamentInfo} leader={liveLeaderboard} />
-          )}
+          <Row gutter={16}>
+            <Col className="gutter-row" span={12}>
+              {liveLeaderboard[0] && (
+                <Header
+                  tournamentInfo={tournamentInfo}
+                  leader={liveLeaderboard}
+                />
+              )}
+            </Col>
+            <Col className="gutter-row" span={12}>
+              {selectedPlayers && (
+                <>
+                  <Progress
+                    type="circle"
+                    percent={(pickNo / selectedPlayers.length) * 100}
+                    format={() => `${pickNo} / ${selectedPlayers.length}`}
+                  />
+                  <h5>Draft Progress</h5>
+                </>
+              )}
+              {/* base this on round number / final round */}
+            </Col>
+          </Row>
           <Button
             onClick={() => {
               startDraft();
