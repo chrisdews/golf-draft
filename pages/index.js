@@ -2,7 +2,7 @@ import React from "react";
 import Head from "next/head";
 import HomeLayout from "../src/components/homeLayout";
 
-import "antd/dist/antd.css";
+
 
 export default function Home() {
   return (
