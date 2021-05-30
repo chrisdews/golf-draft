@@ -1,6 +1,5 @@
 import React from "react";
 import PropTypes from "prop-types";
-import "./HomeLayout.css"
 import GolfDraft from '../golfDraft'
 
 import { Layout, Menu, Breadcrumb } from "antd";

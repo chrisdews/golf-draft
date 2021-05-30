@@ -15,13 +15,13 @@ import apiMock from "../../hardcodedContent/players";
 import leaderboardMock from "../../hardcodedContent/leaderboard";
 
 const firebaseConfig = {
-  apiKey: process.env.REACT_APP_FIREBASE_KEY,
-  authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
-  databaseURL: process.env.REACT_APP_FIREBASE_DB_URL,
-  storageBucket: process.env.REACT_APP_STORAGE_BUCKET,
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_KEY,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  databaseURL: process.env.NEXT_PUBLIC_FIREBASE_DB_URL,
+  storageBucket: process.env.NEXT_PUBLIC_STORAGE_BUCKET,
 };
 
-const useHardCodedContent = process.env.REACT_APP_MOCK_ENV === "mock";
+const useHardCodedContent = process.env.NEXT_PUBLIC_MOCK_ENV === "mock";
 if (!firebase.apps.length) {
   firebase.initializeApp(firebaseConfig);
 } else {
@@ -102,7 +102,7 @@ function GolfDraft() {
     await fetch("https://golf-leaderboard-data.p.rapidapi.com/entry-list/285", {
       method: "GET",
       headers: {
-        "x-rapidapi-key": process.env.REACT_APP_API_KEY,
+        "x-rapidapi-key": process.env.NEXT_PUBLIC_API_KEY,
         "x-rapidapi-host": "golf-leaderboard-data.p.rapidapi.com",
       },
     })
@@ -125,7 +125,7 @@ function GolfDraft() {
       {
         method: "GET",
         headers: {
-          "x-rapidapi-key": process.env.REACT_APP_API_KEY,
+          "x-rapidapi-key": process.env.NEXT_PUBLIC_API_KEY,
           "x-rapidapi-host": "golf-leaderboard-data.p.rapidapi.com",
         },
       }
