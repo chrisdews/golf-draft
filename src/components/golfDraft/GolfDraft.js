@@ -22,7 +22,11 @@ const firebaseConfig = {
 };
 
 const useHardCodedContent = process.env.REACT_APP_MOCK_ENV === "mock";
-firebase.initializeApp(firebaseConfig);
+if (!firebase.apps.length) {
+  firebase.initializeApp(firebaseConfig);
+} else {
+  firebase.app();
+}
 
 const database = firebase.database();
 const draftBois = ["Dewsy", "Xander"];
@@ -37,10 +41,19 @@ function GolfDraft() {
   const [pickNo, setPickNo] = useState(0);
   const [whosTurn, setWhosTurn] = useState("");
   const [showLeaderboard, setShowLeaderboard] = useState(false);
+  const [draftStarted, setDraftStarted] = useState(false);
 
   useEffect(() => {
-    getTournamentPlayerData();
-    getTournamentLiveLeaderboard();
+    if (useHardCodedContent) {
+      setTournamentInfo(apiMock.results.tournament);
+      setAvailablePlayers(apiMock.results.entry_list);
+      let leaderboard = leaderboardMock.leaderboard;
+      setLiveLeaderboard(leaderboard);
+      setIsLoading(false);
+    } else {
+      getTournamentPlayerData();
+      getTournamentLiveLeaderboard();
+    }
     getSelectedPlayers();
   }, []);
 
@@ -49,6 +62,20 @@ function GolfDraft() {
     selectedPlayersRef.on("value", (snapshot) => {
       const data = snapshot.val();
       setSelectedPlayers(data);
+      console.log(data);
+      if (data) {
+        setDraftStarted(true);
+        let firstEmptyPickIndex = data.findIndex(
+          (el) => el.player_last_name === undefined
+        );
+        if (firstEmptyPickIndex === -1) {
+          setPickNo(data.length);
+          setWhosTurn("draft complete");
+        } else {
+          setPickNo(firstEmptyPickIndex);
+          setWhosTurn(data[firstEmptyPickIndex].username);
+        }
+      }
     });
   };
 
@@ -71,6 +98,7 @@ function GolfDraft() {
   };
 
   const getTournamentPlayerData = async () => {
+    console.log("test1");
     await fetch("https://golf-leaderboard-data.p.rapidapi.com/entry-list/285", {
       method: "GET",
       headers: {
@@ -80,13 +108,8 @@ function GolfDraft() {
     })
       .then((res) => res.json())
       .then((res) => {
-        if (useHardCodedContent) {
-          setTournamentInfo(apiMock.results.tournament);
-          setAvailablePlayers(apiMock.results.entry_list);
-        } else {
-          setTournamentInfo(res.results.tournament);
-          setAvailablePlayers(res.results.entry_list);
-        }
+        setTournamentInfo(res.results.tournament);
+        setAvailablePlayers(res.results.entry_list);
         setIsLoading(false);
       })
       .catch((err) => {
@@ -95,6 +118,8 @@ function GolfDraft() {
   };
 
   const getTournamentLiveLeaderboard = async () => {
+    console.log("test2");
+
     await fetch(
       "https://golf-leaderboard-data.p.rapidapi.com/leaderboard/285",
       {
@@ -107,14 +132,7 @@ function GolfDraft() {
     )
       .then((res) => res.json())
       .then((res) => {
-        if (useHardCodedContent) {
-          let leaderboard = leaderboardMock.leaderboard;
-          setLiveLeaderboard(leaderboard);
-        } else {
-          setLiveLeaderboard(res.results.leaderboard);
-        }
-
-        setIsLoading(false);
+        setLiveLeaderboard(res.results.leaderboard);
       })
       .catch((err) => {
         console.error(err);
@@ -124,6 +142,7 @@ function GolfDraft() {
   const resetDraft = async () => {
     if (window.confirm("Are you sure you wish to delete this item?")) {
       database.ref("drafts/" + draftId).remove();
+      setDraftStarted(false);
     }
   };
 
@@ -151,8 +170,9 @@ function GolfDraft() {
 
   const startDraft = () => {
     setWhosTurn(draftBois[0]);
-    database.ref("drafts/" + draftId).update(createInitialDraftArray(12));
-    // make the 12 a user selection
+    database.ref("drafts/" + draftId).update(createInitialDraftArray(6));
+    // make the 6 a user selection
+    setDraftStarted(true);
   };
 
   const playerSelectionClick = (id) => {
@@ -180,7 +200,16 @@ function GolfDraft() {
                 />
               )}
             </Col>
-            <Col className="gutter-row" span={12}>
+            <Col className="gutter-row" span={8}>
+              {selectedPlayers && (
+                <>
+                  <p>Picking Now:</p>
+                  <h3>{whosTurn}</h3>
+                </>
+              )}
+              {/* base this on round number / final round */}
+            </Col>
+            <Col className="gutter-row" span={4}>
               {selectedPlayers && (
                 <>
                   <Progress
@@ -195,6 +224,7 @@ function GolfDraft() {
             </Col>
           </Row>
           <Button
+            disabled={draftStarted}
             onClick={() => {
               startDraft();
             }}

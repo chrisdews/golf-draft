@@ -7,8 +7,8 @@ import countryIsoConverter from "../../helpers/countryIsoCoverter";
 
 function AvailablePlayers({ availablePlayers, playerSelectionClick }) {
   const clickHandler = (record) => {
-    if (window.confirm(`Are you sure you wish to draft ${record.player}?`)){
-    playerSelectionClick(record.key);
+    if (window.confirm(`Are you sure you wish to draft ${record.player}?`)) {
+      playerSelectionClick(record.key);
     }
   };
 
@@ -28,36 +28,47 @@ function AvailablePlayers({ availablePlayers, playerSelectionClick }) {
       title: "Player",
       dataIndex: "player",
       width: 50,
-      render: text => 
-      <a onRow={(record) => ({
-        onClick: () => {
-          clickHandler(record.key);
-        },
-      })}>{text}</a>,
-      
+      render: (text) => (
+        <a
+          onRow={(record) => ({
+            onClick: () => {
+              clickHandler(record.key);
+            },
+          })}
+        >
+          {text}
+        </a>
+      ),
     },
     {
       title: "",
       dataIndex: "Button",
       width: 20,
-      render: () => <Button onRow={(record) => ({
-        onClick: () => {
-          clickHandler(record.key);
-        },
-      })}>select</Button>,
+      render: () => (
+        <Button
+          onRow={(record) => ({
+            onClick: () => {
+              clickHandler(record.key);
+            },
+          })}
+        >
+          select
+        </Button>
+      ),
     },
   ];
 
   const data = [];
   for (let i = 0; i < availablePlayers.length; i++) {
+    let worldRanking = "TBC";
+    let firstName = availablePlayers[i].first_name;
+    let lastName = availablePlayers[i].last_name;
+    let flagImage = availablePlayers[i].country
+      ? `https://www.countryflags.io/${countryIsoConverter(
+          availablePlayers[i].country
+        )}/shiny/24.png`
+      : "";
 
-    let worldRanking = 'TBC'
-    let firstName = availablePlayers[i].first_name
-    let lastName = availablePlayers[i].last_name
-    let flagImage = availablePlayers[i].country ? `https://www.countryflags.io/${countryIsoConverter(
-      availablePlayers[i].country
-    )}/shiny/24.png` : '';
-    
     data.push({
       key: i,
       wr: worldRanking,
@@ -72,7 +83,7 @@ function AvailablePlayers({ availablePlayers, playerSelectionClick }) {
     <div style={style}>
       <h3>Available Players</h3>
       <Table
-              onRow={(record) => ({
+        onRow={(record) => ({
           onClick: () => {
             clickHandler(record);
           },
