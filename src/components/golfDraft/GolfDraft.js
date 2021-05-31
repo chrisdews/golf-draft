@@ -1,11 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Row, Col, Button, Progress } from "antd";
 import PropTypes from "prop-types";
-import firebase from "firebase/app";
-import "firebase/analytics";
-import "firebase/auth";
-import "firebase/firestore";
-import "firebase/database";
+
 
 import AvailablePlayers from "../availablePlayers";
 import Header from "../header";
@@ -13,22 +9,12 @@ import LiveLeaderboard from "../liveLeaderboard";
 import DraftHistory from "../draftHistory";
 import apiMock from "../../hardcodedContent/players";
 import leaderboardMock from "../../hardcodedContent/leaderboard";
+import firebaseInit from "../../helpers/firebaseInit"
 
-const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_KEY,
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-  databaseURL: process.env.NEXT_PUBLIC_FIREBASE_DB_URL,
-  storageBucket: process.env.NEXT_PUBLIC_STORAGE_BUCKET,
-};
 
+const database = firebaseInit()
 const useHardCodedContent = process.env.NEXT_PUBLIC_MOCK_ENV === "mock";
-if (!firebase.apps.length) {
-  firebase.initializeApp(firebaseConfig);
-} else {
-  firebase.app();
-}
 
-const database = firebase.database();
 const draftBois = ["Dewsy", "Xander"];
 const draftId = useHardCodedContent ? 8000001 : 1000002;
 
@@ -116,7 +102,6 @@ function GolfDraft() {
   };
 
   const getTournamentLiveLeaderboard = async () => {
-    console.log("test2");
 
     await fetch(
       "https://golf-leaderboard-data.p.rapidapi.com/leaderboard/285",
