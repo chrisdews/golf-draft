@@ -1,11 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Row, Col, Button, Progress } from "antd";
 import PropTypes from "prop-types";
-import firebase from "firebase/app";
-import "firebase/analytics";
-import "firebase/auth";
-import "firebase/firestore";
-import "firebase/database";
+
 
 import AvailablePlayers from "../availablePlayers";
 import Header from "../header";
@@ -13,22 +9,12 @@ import LiveLeaderboard from "../liveLeaderboard";
 import DraftHistory from "../draftHistory";
 import apiMock from "../../hardcodedContent/players";
 import leaderboardMock from "../../hardcodedContent/leaderboard";
+import firebaseInit from "../../helpers/firebaseInit"
 
-const firebaseConfig = {
-  apiKey: process.env.REACT_APP_FIREBASE_KEY,
-  authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
-  databaseURL: process.env.REACT_APP_FIREBASE_DB_URL,
-  storageBucket: process.env.REACT_APP_STORAGE_BUCKET,
-};
 
-const useHardCodedContent = process.env.REACT_APP_MOCK_ENV === "mock";
-if (!firebase.apps.length) {
-  firebase.initializeApp(firebaseConfig);
-} else {
-  firebase.app();
-}
+const database = firebaseInit()
+const useHardCodedContent = process.env.NEXT_PUBLIC_MOCK_ENV === "mock";
 
-const database = firebase.database();
 const draftBois = ["Dewsy", "Xander"];
 const draftId = useHardCodedContent ? 8000001 : 1000002;
 
@@ -62,7 +48,6 @@ function GolfDraft() {
     selectedPlayersRef.on("value", (snapshot) => {
       const data = snapshot.val();
       setSelectedPlayers(data);
-      console.log(data);
       if (data) {
         setDraftStarted(true);
         let firstEmptyPickIndex = data.findIndex(
@@ -98,11 +83,10 @@ function GolfDraft() {
   };
 
   const getTournamentPlayerData = async () => {
-    console.log("test1");
     await fetch("https://golf-leaderboard-data.p.rapidapi.com/entry-list/285", {
       method: "GET",
       headers: {
-        "x-rapidapi-key": process.env.REACT_APP_API_KEY,
+        "x-rapidapi-key": process.env.NEXT_PUBLIC_API_KEY,
         "x-rapidapi-host": "golf-leaderboard-data.p.rapidapi.com",
       },
     })
@@ -118,14 +102,13 @@ function GolfDraft() {
   };
 
   const getTournamentLiveLeaderboard = async () => {
-    console.log("test2");
 
     await fetch(
       "https://golf-leaderboard-data.p.rapidapi.com/leaderboard/285",
       {
         method: "GET",
         headers: {
-          "x-rapidapi-key": process.env.REACT_APP_API_KEY,
+          "x-rapidapi-key": process.env.NEXT_PUBLIC_API_KEY,
           "x-rapidapi-host": "golf-leaderboard-data.p.rapidapi.com",
         },
       }
