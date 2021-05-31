@@ -1,12 +1,26 @@
-import React from "react";
+import React, { useState } from "react";
 import PropTypes from "prop-types";
 import GolfDraft from '../golfDraft'
+import firebaseLogin from '../../helpers/firbaseLogin'
 
-import { Layout, Menu, Breadcrumb } from "antd";
+import { Button, Layout, Menu, Breadcrumb } from "antd";
 const { Header, Content, Footer } = Layout;
 
 
 function HomeLayout() {
+
+  const [user, setUser] = useState(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  const signInClickHandler = async () => {
+    let loginResponse = await firebaseLogin()
+    console.log('==========', loginResponse)
+    setUser(loginResponse)
+    if(loginResponse.displayName){
+      setIsLoggedIn(true)
+    }
+  }
+
   return (
     <div>
       <Layout className="layout">
@@ -16,6 +30,8 @@ function HomeLayout() {
             <Menu.Item key="1">nav 1</Menu.Item>
             <Menu.Item key="2">nav 2</Menu.Item>
             <Menu.Item key="3">nav 3</Menu.Item>
+            <Button onClick={() => {signInClickHandler()}}>{isLoggedIn ? 'sign out' : 'sign in'}</Button>
+            <span>{isLoggedIn && `logged in as: ${user.displayName}`}</span> 
           </Menu>
         </Header>
         <Content style={{ padding: "0 50px" }}>
