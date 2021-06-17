@@ -15,7 +15,7 @@ import firebaseInit from "../../helpers/firebaseInit"
 const database = firebaseInit()
 const useHardCodedContent = process.env.NEXT_PUBLIC_MOCK_ENV === "mock";
 
-const draftBois = ["Dewsy", "Xander"];
+const draftBois = ["Xander", "Dewsy"];
 const draftId = useHardCodedContent ? 8000001 : 1000002;
 
 function GolfDraft() {
@@ -83,7 +83,7 @@ function GolfDraft() {
   };
 
   const getTournamentPlayerData = async () => {
-    await fetch("https://golf-leaderboard-data.p.rapidapi.com/entry-list/285", {
+    await fetch("https://golf-leaderboard-data.p.rapidapi.com/entry-list/289", {
       method: "GET",
       headers: {
         "x-rapidapi-key": process.env.NEXT_PUBLIC_API_KEY,
@@ -104,7 +104,7 @@ function GolfDraft() {
   const getTournamentLiveLeaderboard = async () => {
 
     await fetch(
-      "https://golf-leaderboard-data.p.rapidapi.com/leaderboard/285",
+      "https://golf-leaderboard-data.p.rapidapi.com/leaderboard/289",
       {
         method: "GET",
         headers: {
@@ -134,7 +134,7 @@ function GolfDraft() {
     let pick = 1;
     let overall = index + 1;
     let team_pick = 1;
-    let total_rounds = 12;
+    let total_rounds = 32;
     let total_teams = draftBois.length;
 
     round = Math.floor((overall - 1) / total_teams + 1);
@@ -153,7 +153,7 @@ function GolfDraft() {
 
   const startDraft = () => {
     setWhosTurn(draftBois[0]);
-    database.ref("drafts/" + draftId).update(createInitialDraftArray(6));
+    database.ref("drafts/" + draftId).update(createInitialDraftArray(16));
     // make the 6 a user selection
     setDraftStarted(true);
   };
