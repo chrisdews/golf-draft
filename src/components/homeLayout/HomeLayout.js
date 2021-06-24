@@ -2,6 +2,9 @@ import React, { useState } from "react";
 import PropTypes from "prop-types";
 import firebase from "firebase/app";
 import firebaseLogin from "../../helpers/firebaseLogin";
+import firebaseInit from "../../helpers/firebaseInit"
+
+const database = firebaseInit()
 
 import { Button, Layout, Menu, Breadcrumb, Avatar, Image } from "antd";
 const { Header, Content, Footer } = Layout;
@@ -25,13 +28,39 @@ function HomeLayout({ children }) {
         });
     } else {
       let loginResponse = await firebaseLogin();
-      console.log("==========", loginResponse);
       setUser(loginResponse);
       if (loginResponse.displayName) {
         setIsLoggedIn(true);
+        addUserToDb(loginResponse)
+        getUserFromDb(loginResponse)
+        // add the user to our database.
       }
     }
   };
+
+  // to do: add useContext for user data so it's global
+  
+  const getUserFromDb = (loginResponse) => {
+    const userId = loginResponse.uid
+
+    const existingUser = database.ref("users/" + userId)
+    existingUser.on("value", (snapshot) => {
+      const data = snapshot.val();
+      setUser(data)
+    })
+  }
+
+  // not used yet, need to use when signing up.
+  const addUserToDb = (loginResponse) => {
+    let userId = loginResponse.uid
+    const ref = database.ref('users');
+// need to add check here to make sure we dont overwrite the user's drafts with null 
+    ref.child(userId).set({
+      email: loginResponse.email,
+      displayName: loginResponse.displayName
+    })
+    console.log('added user to db')
+  }
 
   firebase.auth().onAuthStateChanged(function (user) {
     if (user) {
@@ -68,6 +97,13 @@ function HomeLayout({ children }) {
             >
               {isLoggedIn ? "sign out" : "sign in"}
             </Button>
+            <Button
+              onClick={() => {
+                createDraftGameClickHandler();
+              }}
+            >
+              Create
+            </Button>
           </Menu>
         </Header>
         <Content style={{ padding: "0 50px" }}>
@@ -77,7 +113,7 @@ function HomeLayout({ children }) {
             <Breadcrumb.Item>App</Breadcrumb.Item>
           </Breadcrumb>
 
-          <div className="site-layout-content">{children}</div>
+          <div className="site-layout-content" >{children}</div>
         </Content>
         <Footer style={{ textAlign: "center" }}>
           GolfDraft ©2021 Created by Chris Dews & Xander Johnston
