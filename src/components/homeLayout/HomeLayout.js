@@ -1,17 +1,20 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import PropTypes from "prop-types";
 import firebase from "firebase/app";
 import firebaseLogin from "../../helpers/firebaseLogin";
-import firebaseInit from "../../helpers/firebaseInit"
+import firebaseInit from "../../helpers/firebaseInit";
+import { Context } from "../../../context/provider";
 
-const database = firebaseInit()
+const database = firebaseInit();
 
 import { Button, Layout, Menu, Breadcrumb, Avatar, Image } from "antd";
 const { Header, Content, Footer } = Layout;
 
 function HomeLayout({ children }) {
-  const [user, setUser] = useState(null);
+  const { state, dispatch } = useContext(Context);
+  const { userData } = state;
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userDrafts, setUserDrafts] = useState({});
 
   const signInClickHandler = async () => {
     if (isLoggedIn) {
@@ -20,6 +23,11 @@ function HomeLayout({ children }) {
         .signOut()
         .then(() => {
           console.log("logged out");
+          dispatch({
+            type: "SET_USER_DATA",
+            payload: { displayName: null },
+          });
+          setIsLoggedIn(false);
           // Sign-out successful.
         })
         .catch((error) => {
@@ -28,49 +36,69 @@ function HomeLayout({ children }) {
         });
     } else {
       let loginResponse = await firebaseLogin();
-      setUser(loginResponse);
       if (loginResponse.displayName) {
         setIsLoggedIn(true);
-        addUserToDb(loginResponse)
-        getUserFromDb(loginResponse)
+        addUserToDb(loginResponse);
+        getUserFromDb(loginResponse);
+        dispatch({
+          type: "SET_USER_DATA",
+          payload: loginResponse,
+        });
         // add the user to our database.
       }
     }
   };
 
-  // to do: add useContext for user data so it's global
-  
   const getUserFromDb = (loginResponse) => {
-    const userId = loginResponse.uid
+    const userId = loginResponse.uid;
 
-    const existingUser = database.ref("users/" + userId)
+    const existingUser = database.ref("users/" + userId);
     existingUser.on("value", (snapshot) => {
       const data = snapshot.val();
-      setUser(data)
-    })
-  }
+      setUserDrafts(data);
+    });
+  };
 
   // not used yet, need to use when signing up.
   const addUserToDb = (loginResponse) => {
-    let userId = loginResponse.uid
-    const ref = database.ref('users');
-// need to add check here to make sure we dont overwrite the user's drafts with null 
+    let userId = loginResponse.uid;
+    const ref = database.ref("users");
+    // need to add check here to make sure we dont overwrite the user's drafts with null
     ref.child(userId).set({
       email: loginResponse.email,
-      displayName: loginResponse.displayName
-    })
-    console.log('added user to db')
-  }
+      displayName: loginResponse.displayName,
+    });
+    console.log("added user to db");
+  };
 
-  firebase.auth().onAuthStateChanged(function (user) {
-    if (user) {
-      setUser(user);
-      setIsLoggedIn(true);
-    } else {
-      setIsLoggedIn(false);
-      setUser(null);
-    }
-  });
+  // firebase.auth().onAuthStateChanged(function (userData) {
+  //   if (userData) {
+  //     return;
+  //   } else {
+  //     setIsLoggedIn(false);
+  //     dispatch({
+  //       type: "SET_USER_DATA",
+  //       payload: { displayName: null },
+  //     });
+  //   }
+  // });
+
+  const createDraftGameClickHandler = (userData) => {
+    const userId = userData.uid;
+
+    const newDraft = database.ref("drafts/");
+
+    const draft = newDraft.push({
+      users: { userId },
+      draftName: 'test'
+    });
+
+    const newDraftId = draft.key;
+    console.log(newDraftId)
+
+    const existingUser = database.ref("users/" + userId);
+    existingUser.child('drafts').child(newDraftId).set({name: 'test'});
+  };
 
   return (
     <div>
@@ -83,10 +111,10 @@ function HomeLayout({ children }) {
             <Menu.Item key="3">nav 3</Menu.Item>
             {isLoggedIn && (
               <div style={{ float: "right" }}>
-                <span>{`logged in: ${user.displayName}`}</span>
+                <span>{`logged in: ${userData.displayName}`}</span>
                 <Avatar
                   style={{ margin: "0.5em" }}
-                  src={<Image src={user.photoURL} />}
+                  src={<Image src={userData.photoURL} />}
                 />
               </div>
             )}
@@ -99,7 +127,7 @@ function HomeLayout({ children }) {
             </Button>
             <Button
               onClick={() => {
-                createDraftGameClickHandler();
+                createDraftGameClickHandler(userData);
               }}
             >
               Create
@@ -113,7 +141,7 @@ function HomeLayout({ children }) {
             <Breadcrumb.Item>App</Breadcrumb.Item>
           </Breadcrumb>
 
-          <div className="site-layout-content" >{children}</div>
+          <div className="site-layout-content">{children}</div>
         </Content>
         <Footer style={{ textAlign: "center" }}>
           GolfDraft ©2021 Created by Chris Dews & Xander Johnston
