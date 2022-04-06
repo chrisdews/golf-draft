@@ -31,16 +31,16 @@ function draftHistory({ selectedPlayers }) {
 
   if (selectedPlayers) {
     for (let i = 0; i < selectedPlayers.length; i++) {
-      let username = selectedPlayers[i].username;
-      let playername = selectedPlayers[i].player_last_name
-        ? `${selectedPlayers[i].player_first_name} ${selectedPlayers[i].player_last_name}`
+      let username = selectedPlayers[i]?.username;
+      let playername = selectedPlayers[i]?.player_last_name
+        ? `${selectedPlayers[i].player_first_name} ${selectedPlayers[i]?.player_last_name}`
         : "";
-      let imageURL = selectedPlayers[i].player_country
-        ? `https://www.countryflags.io/${countryIsoConverter(
-            selectedPlayers[i].player_country
-          )}/shiny/24.png`
+      let imageURL = selectedPlayers[i]?.player_country
+        ? countryIsoConverter(
+            selectedPlayers[i]?.player_country
+          )
         : "";
-      let pick = selectedPlayers[i].pick;
+      let pick = selectedPlayers[i]?.pick;
       data.push({
         key: i,
         pick: pick,

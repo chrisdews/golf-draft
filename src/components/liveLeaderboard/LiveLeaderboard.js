@@ -17,9 +17,9 @@ function LiveLeaderboard({ liveLeaderboard, selectedPlayers }) {
     },
     {
       title: "Country",
-      dataIndex: "flagImage",
+      dataIndex: "countryIso",
       width: 20,
-      render: (theImageURL) => <img alt={theImageURL} src={theImageURL} />,
+      // render: (theImageURL) => <img alt={theImageURL} src={theImageURL} />,
     },
     {
       title: "To Par",
@@ -45,11 +45,7 @@ function LiveLeaderboard({ liveLeaderboard, selectedPlayers }) {
     let firstName = liveLeaderboard[i].first_name;
     let lastName = liveLeaderboard[i].last_name;
     let position = liveLeaderboard[i].position;
-    let flagImage = liveLeaderboard[i].country
-      ? `https://www.countryflags.io/${countryIsoConverter(
-          liveLeaderboard[i].country
-        )}/shiny/24.png`
-      : "";
+    let countryIso = liveLeaderboard[i].country
     let totalToPar = liveLeaderboard[i].total_to_par;
     let holes_played = liveLeaderboard[i].holes_played
     let selected =
@@ -65,7 +61,7 @@ function LiveLeaderboard({ liveLeaderboard, selectedPlayers }) {
         key: i,
         position: position,
         player: `${firstName} ${lastName}`,
-        flagImage: flagImage,
+        countryIso: countryIso,
         totalToPar: totalToPar,
         holesPlayed: holes_played,
         owner: owner,

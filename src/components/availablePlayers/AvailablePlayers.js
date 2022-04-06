@@ -64,9 +64,9 @@ function AvailablePlayers({ availablePlayers, playerSelectionClick }) {
     let firstName = availablePlayers[i].first_name;
     let lastName = availablePlayers[i].last_name;
     let flagImage = availablePlayers[i].country
-      ? `https://www.countryflags.io/${countryIsoConverter(
+      ? countryIsoConverter(
           availablePlayers[i].country
-        )}/shiny/24.png`
+        )
       : "";
 
     data.push({

@@ -4,6 +4,7 @@ import "firebase/auth";
 import "firebase/firestore";
 import "firebase/database";
 
+
 const firebaseInit = () => {
     const firebaseConfig = {
         apiKey: process.env.NEXT_PUBLIC_FIREBASE_KEY,
