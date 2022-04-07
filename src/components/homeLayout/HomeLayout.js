@@ -14,7 +14,6 @@ const { Header, Content, Footer } = Layout;
 function HomeLayout({ children }) {
   const { state, dispatch } = useContext(Context);
   const { userData, isLoggedIn } = state;
-  // const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userDrafts, setUserDrafts] = useState({});
 
   const signIn = () => {
@@ -116,35 +115,8 @@ function HomeLayout({ children }) {
     });
   };
 
-  
-  // firebase.auth().onAuthStateChanged(function (userData) {
-  //   if (userData) {
-  //     return;
-  //   } else {
-  //     setIsLoggedIn(false);
-  //     dispatch({
-  //       type: "SET_USER_DATA",
-  //       payload: { displayName: null },
-  //     });
-  //   }
-  // });
 
-  const createDraftGameClickHandler = (userData) => {
-    const userId = userData.uid;
 
-    const newDraft = database.ref("drafts/");
-
-    const draft = newDraft.push({
-      users: { userId },
-      draftName: "test",
-    });
-
-    const newDraftId = draft.key;
-    console.log(newDraftId);
-
-    const existingUser = database.ref("users/" + userId);
-    existingUser.child("drafts").child(newDraftId).set({ name: "test" });
-  };
 
   return (
     <div>
@@ -171,13 +143,7 @@ function HomeLayout({ children }) {
             >
               {isLoggedIn ? "sign out" : "sign in"}
             </Button>
-            <Button
-              onClick={() => {
-                createDraftGameClickHandler(userData);
-              }}
-            >
-              Create
-            </Button>
+            
           </Menu>
         </Header>
         <Content style={{ padding: "0 50px" }}>

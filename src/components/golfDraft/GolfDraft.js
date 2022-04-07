@@ -1,8 +1,8 @@
 import React, { useContext, useEffect, useState } from "react";
 import { Row, Col, Button, Progress } from "antd";
+import Link from "next/link";
 
 import Header from "../header";
-import LiveLeaderboard from "../liveLeaderboard";
 import apiMock from "../../hardcodedContent/players";
 import leaderboardMock from "../../hardcodedContent/leaderboard";
 import UserDraftsList from "../../components/userDraftsList";
@@ -38,13 +38,16 @@ function GolfDraft() {
   }, []);
 
   const getTournamentPlayerData = async () => {
-    await fetch(`https://golf-leaderboard-data.p.rapidapi.com/entry-list/${process.env.NEXT_PUBLIC_TOURNAMENT_ID}`, {
-      method: "GET",
-      headers: {
-        "x-rapidapi-key": process.env.NEXT_PUBLIC_API_KEY,
-        "x-rapidapi-host": "golf-leaderboard-data.p.rapidapi.com",
-      },
-    })
+    await fetch(
+      `https://golf-leaderboard-data.p.rapidapi.com/entry-list/${process.env.NEXT_PUBLIC_TOURNAMENT_ID}`,
+      {
+        method: "GET",
+        headers: {
+          "x-rapidapi-key": process.env.NEXT_PUBLIC_API_KEY,
+          "x-rapidapi-host": "golf-leaderboard-data.p.rapidapi.com",
+        },
+      }
+    )
       .then((res) => res.json())
       .then((res) => {
         setTournamentInfo(res.results.tournament);
@@ -81,6 +84,7 @@ function GolfDraft() {
         <>
           <Row gutter={16}>
             <Col className="gutter-row" span={12}>
+              The next tournament is:
               {liveLeaderboard[0] && (
                 <Header
                   tournamentInfo={tournamentInfo}
@@ -92,6 +96,13 @@ function GolfDraft() {
 
           {isLoggedIn ? (
             <>
+              <Link href="/create">
+                <Button>Create</Button>
+              </Link>
+              <Link href="/join">
+                <Button>Join</Button>
+              </Link>
+
               <h3>
                 Welcome {state.userData.displayName}, Here are your existing
                 drafts:
@@ -101,17 +112,6 @@ function GolfDraft() {
           ) : (
             <Row>sign in to create/view drafts</Row>
           )}
-
-          {
-            <Row gutter={16}>
-              <Col className="gutter-row" span={18}>
-                <LiveLeaderboard
-                  liveLeaderboard={liveLeaderboard}
-                  // add a selected by % to the welcome leaderboard
-                />
-              </Col>
-            </Row>
-          }
         </>
       )}
     </div>
