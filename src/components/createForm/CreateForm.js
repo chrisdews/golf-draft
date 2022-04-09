@@ -88,25 +88,31 @@ const CreateForm = () => {
   const { state } = useContext(Context);
   const router = useRouter();
 
-  const userId = state.userData.uid;
+  const userId = state?.userData?.uid;
+  const displayName = state?.userData?.displayName;
 
   const createDraftGame = (values, userId) => {
+    const draftsRef = database.ref("drafts/");
+    const { draftName } = values;
 
-  const newDraft = database.ref("drafts/");
-  const { draftName } = values;
+    const draft = draftsRef.push({
+      draftName: draftName,
+      users: "",
+    });
 
-  const draft = newDraft.push({
-    users: { userId },
-    draftName: draftName,
-  });
+    const newDraftId = draft.key;
+    const newDraft = database.ref("drafts/" + newDraftId + "/users");
+    newDraft.child(userId).set({ role: "admin", displayName: displayName });
 
-  const newDraftId = draft.key;
-  const existingUser = database.ref("users/" + userId);
-  existingUser.child("drafts").child(newDraftId).set({ name: draftName });
-  router.push({
-    pathname: `/draft/${newDraftId}`,
-  });
-};
+    const existingUser = database.ref("users/" + userId);
+    existingUser
+      .child("drafts")
+      .child(newDraftId)
+      .set({ draftName: draftName });
+    router.push({
+      pathname: `/draft/${newDraftId}`,
+    });
+  };
 
   const showUserModal = () => {
     setVisible(true);
@@ -119,8 +125,6 @@ const CreateForm = () => {
   const onFinish = (values) => {
     createDraftGame(values, userId);
   };
-
-  
 
   return (
     <Form.Provider

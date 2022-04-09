@@ -20,10 +20,8 @@ function GolfDraft() {
   const [isLoading, setIsLoading] = useState(true);
   const [tournamentInfo, setTournamentInfo] = useState([]);
   const [liveLeaderboard, setLiveLeaderboard] = useState([]);
-  const [userDraftList, setUserDraftList] = useState({});
 
   const { isLoggedIn, userDrafts } = state;
-  const userId = state.userData.uid;
 
   useEffect(() => {
     if (useHardCodedContent) {

@@ -1,10 +1,13 @@
 import "antd/dist/antd.css";
 import { ContextProvider } from "../context/provider";
+import LayoutWrapper from "../src/components/layoutWrapper";
 
 function MyApp({ Component, pageProps }) {
   return (
     <ContextProvider>
-      <Component {...pageProps} />
+      <LayoutWrapper>
+        <Component {...pageProps} />
+      </LayoutWrapper>
     </ContextProvider>
   );
 }
