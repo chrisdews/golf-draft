@@ -1,6 +1,5 @@
 import React, { useState, useContext } from "react";
-import Link from 'next/link'
-import PropTypes from "prop-types";
+import Link from "next/link";
 import firebase from "firebase/app";
 import firebaseLogin from "../../helpers/firebaseLogin";
 import firebaseInit from "../../helpers/firebaseInit";
@@ -11,11 +10,9 @@ const database = firebaseInit();
 import { Button, Layout, Menu, Breadcrumb, Avatar, Image } from "antd";
 const { Header, Content, Footer } = Layout;
 
-function HomeLayout({ children }) {
+function LayoutWrapper({ children }) {
   const { state, dispatch } = useContext(Context);
   const { userData, isLoggedIn } = state;
-  // const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [userDrafts, setUserDrafts] = useState({});
 
   const signIn = () => {
     dispatch({
@@ -65,35 +62,6 @@ function HomeLayout({ children }) {
     }
   };
 
-  // const getUserFromDb = (loginResponse) => {
-  //   const userId = loginResponse.uid;
-
-  //   const existingUser = database.ref("users/" + userId);
-  //   existingUser.on("value", (snapshot) => {
-  //     const data = snapshot.val();
-  //     setUserDrafts(data);
-  //   });
-  // };
-
-  const createNewUser = (userId) => {
-    const ref = database.ref("users");
-
-    let data = {
-      email: loginResponse.email,
-      displayName: loginResponse.displayName,
-      drafts: null,
-    }
-
-    ref.child(userId).set(data);
-
-    dispatch({
-      type: "SET_USER_DRAFT_DATA",
-      payload: data,
-    });
-    console.log("added user to db");
-  };
-
-
   const getUserOrAddToDb = (loginResponse) => {
     let userId = loginResponse.uid;
 
@@ -101,49 +69,35 @@ function HomeLayout({ children }) {
 
     existingUser.on("value", (snapshot) => {
       const data = snapshot.val();
-      console.log({ data });
 
       if (data) {
-        setUserDrafts(data);
+        console.log({data})
         dispatch({
           type: "SET_USER_DRAFT_DATA",
           payload: data,
         });
       } else {
-        // this if statement not tested yet
-        createNewUser(userId);
-      }
-    });
+        createNewUser(loginResponse, userId);
+      
+    }});
   };
 
-  
-  // firebase.auth().onAuthStateChanged(function (userData) {
-  //   if (userData) {
-  //     return;
-  //   } else {
-  //     setIsLoggedIn(false);
-  //     dispatch({
-  //       type: "SET_USER_DATA",
-  //       payload: { displayName: null },
-  //     });
-  //   }
-  // });
+  const createNewUser = (loginResponse, userId) => {
+    const ref = database.ref("users");
 
-  const createDraftGameClickHandler = (userData) => {
-    const userId = userData.uid;
+    let data = {
+      email: loginResponse.email,
+      displayName: loginResponse.displayName,
+      drafts: null,
+    };
 
-    const newDraft = database.ref("drafts/");
-
-    const draft = newDraft.push({
-      users: { userId },
-      draftName: "test",
+    ref.child(userId).set(data);
+    dispatch({
+      type: "SET_USER_DATA",
+      payload: loginResponse,
     });
 
-    const newDraftId = draft.key;
-    console.log(newDraftId);
-
-    const existingUser = database.ref("users/" + userId);
-    existingUser.child("drafts").child(newDraftId).set({ name: "test" });
+    console.log("added user to db");
   };
 
   return (
@@ -152,7 +106,9 @@ function HomeLayout({ children }) {
         <Header>
           <div className="logo" />
           <Menu theme="dark" mode="horizontal" defaultSelectedKeys={["2"]}>
-            <Menu.Item key="1"><Link href="/">Home</Link></Menu.Item>
+            <Menu.Item key="1">
+              <Link href="/">Home</Link>
+            </Menu.Item>
             <Menu.Item key="2">nav 2</Menu.Item>
             <Menu.Item key="3">nav 3</Menu.Item>
             {isLoggedIn && (
@@ -170,13 +126,6 @@ function HomeLayout({ children }) {
               }}
             >
               {isLoggedIn ? "sign out" : "sign in"}
-            </Button>
-            <Button
-              onClick={() => {
-                createDraftGameClickHandler(userData);
-              }}
-            >
-              Create
             </Button>
           </Menu>
         </Header>
@@ -199,4 +148,4 @@ function HomeLayout({ children }) {
 
 Layout.propTypes = {};
 
-export default HomeLayout;
+export default LayoutWrapper;

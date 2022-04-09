@@ -1,17 +1,19 @@
 import React, { useContext, useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import firebaseInit from "../../src/helpers/firebaseInit";
-import DraftHistory from "../../src/components/draftHistory";
-import HomeLayout from "../../src/components/homeLayout";
 
 import { Row, Col, Button, Progress } from "antd";
 
+import { Context } from "../../context/provider";
+
+import DraftHistory from "../../src/components/draftHistory";
 import AvailablePlayers from "../../src/components/availablePlayers";
 import Header from "../../src/components/header";
 import LiveLeaderboard from "../../src/components/liveLeaderboard";
+import UsersList from "../../src/components/usersList";
+
 import apiMock from "../../src/hardcodedContent/players";
 import leaderboardMock from "../../src/hardcodedContent/leaderboard";
-import { Context } from "../../context/provider";
 
 const useHardCodedContent = process.env.NEXT_PUBLIC_MOCK_ENV === "mock";
 
@@ -35,6 +37,7 @@ const Drafts = () => {
   const [whosTurn, setWhosTurn] = useState("");
   const [showLeaderboard, setShowLeaderboard] = useState(false);
   const [draftStarted, setDraftStarted] = useState(false);
+  const [users, setUsers] = useState();
 
   const { isLoggedIn } = state;
 
@@ -65,7 +68,6 @@ const Drafts = () => {
     const selectedPlayersRef = database.ref("drafts/" + draftId + "/picks");
     selectedPlayersRef.on("value", (snapshot) => {
       const data = snapshot.val();
-      console.log({data})
       setSelectedPlayers(data);
       if (data) {
         setDraftStarted(true);
@@ -177,7 +179,6 @@ const Drafts = () => {
     database
       .ref("drafts/" + draftId + "/picks")
       .update(createInitialDraftArray(16));
-    // make the 6 a user selection
     setDraftStarted(true);
   };
 
@@ -193,8 +194,20 @@ const Drafts = () => {
     setPickNo(pickNo + 1);
   };
 
+  const getUserList = () => {
+    const userListRef = database.ref("drafts/" + draftId + "/users");
+    userListRef.on("value", (snapshot) => {
+      const userList = snapshot.val();
+      setUsers(userList)
+    });    
+  };
+
+  useEffect(() => {
+    getUserList();
+  }, []);
+
   return (
-    <HomeLayout>
+    <>
       {state.userData.displayName}
       {!isLoading && (
         <>
@@ -222,9 +235,7 @@ const Drafts = () => {
                   <Progress
                     type="circle"
                     percent={(pickNo / selectedPlayers.length) * 100}
-                    format={() =>
-                      `${pickNo} / ${selectedPlayers.length}`
-                    }
+                    format={() => `${pickNo} / ${selectedPlayers.length}`}
                   />
                   <h5>Draft Progress</h5>
                 </>
@@ -248,6 +259,8 @@ const Drafts = () => {
             {showLeaderboard ? "show Draft" : "show Leaderboard"}
           </Button>
 
+          <UsersList users={users}/>
+
           {!showLeaderboard && (
             <Row gutter={16}>
               <Col className="gutter-row" span={12}>
@@ -262,7 +275,7 @@ const Drafts = () => {
             </Row>
           )}
 
-          {showLeaderboard && (
+          {showLeaderboard && selectedPlayers && isLoggedIn && (
             <Row gutter={16}>
               <Col className="gutter-row" span={18}>
                 <LiveLeaderboard
@@ -275,7 +288,7 @@ const Drafts = () => {
         </>
       )}
       <p>draft: {draftid}</p>;<button onClick={resetDraft}>delete</button>
-    </HomeLayout>
+    </>
   );
 };
 
