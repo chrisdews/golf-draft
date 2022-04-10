@@ -1,6 +1,7 @@
 import React, { useContext, useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import firebaseInit from "../../src/helpers/firebaseInit";
+import firebase from "firebase/app";
 
 import { Row, Col, Button, Progress } from "antd";
 
@@ -23,7 +24,6 @@ const Drafts = () => {
   const database = firebaseInit();
   const router = useRouter();
   const { draftid } = router.query;
-  const draftRef = database.ref("drafts/" + draftid);
 
   const { state, dispatch } = useContext(Context);
   const draftId = draftid;
@@ -33,22 +33,34 @@ const Drafts = () => {
   const [tournamentInfo, setTournamentInfo] = useState([]);
   const [selectedPlayers, setSelectedPlayers] = useState([]);
   const [liveLeaderboard, setLiveLeaderboard] = useState([]);
-  const [pickNo, setPickNo] = useState(0);
+  const [currentPick, setCurrentPick] = useState(0);
+
   const [whosTurn, setWhosTurn] = useState("");
   const [showLeaderboard, setShowLeaderboard] = useState(false);
   const [draftStarted, setDraftStarted] = useState(false);
-  const [users, setUsers] = useState();
+  const [users, setUsers] = useState({});
 
   const { isLoggedIn } = state;
 
   useEffect(() => {
     if (draftid) {
+      const draftRef = database.ref("drafts/" + draftid);
+
       draftRef.on("value", (snapshot) => {
         const data = snapshot.val();
         setSelectedPlayers(data);
       });
     }
   }, [draftid]);
+
+  useEffect(() => {
+    const currentPickRef = database.ref("drafts/" + draftid + "/currentPick");
+
+    currentPickRef.on("value", (snapshot) => {
+      const data = snapshot.val();
+      setCurrentPick(data);
+    });
+  }, []);
 
   useEffect(() => {
     if (useHardCodedContent) {
@@ -71,21 +83,13 @@ const Drafts = () => {
       setSelectedPlayers(data);
       if (data) {
         setDraftStarted(true);
-        let firstEmptyPickIndex = data.findIndex(
-          (el) => el?.player_last_name === undefined
-        );
-        if (firstEmptyPickIndex === -1) {
-          setPickNo(data.length);
-          setWhosTurn("draft complete");
-        } else {
-          setPickNo(firstEmptyPickIndex);
-          setWhosTurn(data[firstEmptyPickIndex]?.username);
-        }
+
+        setWhosTurn(data[currentPick]?.username);
       }
     });
   };
 
-  const writePickData = (draftId, pickNoAdjusted, whosTurn, player) => {
+  const writePickData = (draftId, whosTurn, player) => {
     const selectedPlayersRef = database.ref("drafts/" + draftId + "/picks");
 
     // selectedPlayersRef.on("child_changed", function(snapshot) {
@@ -94,7 +98,7 @@ const Drafts = () => {
     // });
     // we can use this to push updates to clients
 
-    const updatePick = selectedPlayersRef.child(pickNoAdjusted);
+    const updatePick = selectedPlayersRef.child(currentPick);
     updatePick.update({
       player_country: player.country,
       player_first_name: player.first_name,
@@ -152,54 +156,71 @@ const Drafts = () => {
     }
   };
 
-  const getUsername = (index) => {
+  const getCurrentTurnUser = (index) => {
     let round = 1;
     let pick = 1;
     let overall = index + 1;
     let team_pick = 1;
-    let total_rounds = 32;
-    let total_teams = draftBois.length;
+    let userCount = Object.keys(users).length;
 
-    round = Math.floor((overall - 1) / total_teams + 1);
-    pick = ((overall - 1) % total_teams) + 1;
-    team_pick = round % 2 ? pick : round * total_teams - overall + 1;
-    return draftBois[team_pick - 1];
+    round = Math.floor((overall - 1) / userCount + 1);
+    pick = ((overall - 1) % userCount) + 1;
+    team_pick = round % 2 ? pick : round * userCount - overall + 1;
+
+    return Object.keys(users)[team_pick - 1];
   };
 
   const createInitialDraftArray = (roundsNum) => {
-    let picksNum = roundsNum * draftBois.length;
+    let picksNum = roundsNum * Object.keys(users).length;
     return Array.from({ length: picksNum }).map((_, index) => {
       const id = index + 1;
-      return { id, pick: id, player: "", username: getUsername(index) };
+      return {
+        id,
+        pick: id,
+        userId: getCurrentTurnUser(index),
+        username: users[getCurrentTurnUser(index)]?.displayName,
+      };
     });
   };
 
   const startDraft = () => {
-    setWhosTurn(draftBois[0]);
+    setWhosTurn(users[0]?.displayName);
     database
       .ref("drafts/" + draftId + "/picks")
-      .update(createInitialDraftArray(16));
+      .update(createInitialDraftArray(12));
+
+    incrementCurrentPick()
+
     setDraftStarted(true);
+  };
+
+  const incrementCurrentPick = () => {
+    database
+      .ref("drafts/" + draftId)
+      .child("currentPick")
+      .set(firebase.database.ServerValue.increment(1));
   };
 
   const playerSelectionClick = (id) => {
     if (!whosTurn) return;
     let player = { ...availablePlayers[id] };
-    writePickData(draftId, pickNo, whosTurn, player);
+    writePickData(draftId, whosTurn, player);
 
     setAvailablePlayers(
       availablePlayers.filter((p) => p.player_id !== player.player_id)
     );
-    // if the pick number is even, pick again, if it's odd change whosTurn
-    setPickNo(pickNo + 1);
+
+    // setPickNo(pickNo + 1);
+    // do this on server
+    incrementCurrentPick();
   };
 
   const getUserList = () => {
     const userListRef = database.ref("drafts/" + draftId + "/users");
     userListRef.on("value", (snapshot) => {
       const userList = snapshot.val();
-      setUsers(userList)
-    });    
+      setUsers(userList);
+    });
   };
 
   useEffect(() => {
@@ -208,7 +229,6 @@ const Drafts = () => {
 
   return (
     <>
-      {state.userData.displayName}
       {!isLoading && (
         <>
           <Row gutter={16}>
@@ -234,8 +254,8 @@ const Drafts = () => {
                 <>
                   <Progress
                     type="circle"
-                    percent={(pickNo / selectedPlayers.length) * 100}
-                    format={() => `${pickNo} / ${selectedPlayers.length}`}
+                    percent={(currentPick / selectedPlayers.length) * 100}
+                    format={() => `${currentPick} / ${selectedPlayers.length}`}
                   />
                   <h5>Draft Progress</h5>
                 </>
@@ -259,7 +279,7 @@ const Drafts = () => {
             {showLeaderboard ? "show Draft" : "show Leaderboard"}
           </Button>
 
-          <UsersList users={users}/>
+          <UsersList users={users} />
 
           {!showLeaderboard && (
             <Row gutter={16}>
@@ -267,10 +287,11 @@ const Drafts = () => {
                 <AvailablePlayers
                   availablePlayers={availablePlayers}
                   playerSelectionClick={playerSelectionClick}
+                  currentPick={currentPick}
                 />
               </Col>
               <Col className="gutter-row" span={12}>
-                <DraftHistory selectedPlayers={selectedPlayers} />
+                {currentPick > 0 && <DraftHistory selectedPlayers={selectedPlayers} />}
               </Col>
             </Row>
           )}
@@ -287,7 +308,8 @@ const Drafts = () => {
           )}
         </>
       )}
-      <p>draft: {draftid}</p>;<button onClick={resetDraft}>delete</button>
+      <p>draft: {draftid}</p>
+      <button onClick={resetDraft}>delete</button>
     </>
   );
 };

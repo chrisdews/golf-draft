@@ -5,7 +5,7 @@ import { Table, Button } from "antd";
 import "antd/dist/antd.css";
 import countryIsoConverter from "../../helpers/countryIsoCoverter";
 
-function AvailablePlayers({ availablePlayers, playerSelectionClick }) {
+function AvailablePlayers({ availablePlayers, playerSelectionClick, currentPick }) {
   const clickHandler = (record) => {
     if (window.confirm(`Are you sure you wish to draft ${record.player}?`)) {
       playerSelectionClick(record.key);
@@ -46,6 +46,7 @@ function AvailablePlayers({ availablePlayers, playerSelectionClick }) {
       width: 20,
       render: () => (
         <Button
+          disabled={currentPick === 0}
           onRow={(record) => ({
             onClick: () => {
               clickHandler(record.key);

@@ -97,6 +97,7 @@ const CreateForm = () => {
 
     const draft = draftsRef.push({
       draftName: draftName,
+      currentPick: 0,
       users: "",
     });
 
