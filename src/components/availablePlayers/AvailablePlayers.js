@@ -5,12 +5,20 @@ import { Table, Button } from "antd";
 import "antd/dist/antd.css";
 import countryIsoConverter from "../../helpers/countryIsoCoverter";
 
-function AvailablePlayers({ availablePlayers, playerSelectionClick, currentPick }) {
+function AvailablePlayers({ availablePlayers, playerSelectionClick, currentPick, userData, currentTurnData, isLoggedIn }) {
+
+  if (!isLoggedIn) return null
+
   const clickHandler = (record) => {
     if (window.confirm(`Are you sure you wish to draft ${record.player}?`)) {
       playerSelectionClick(record.key);
     }
   };
+
+  const disablePicks = () => {
+    if (currentPick !== 0 && currentTurnData && userData?.uid === currentTurnData.userId) return false
+    return true
+  }
 
   const columns = [
     {
@@ -46,7 +54,7 @@ function AvailablePlayers({ availablePlayers, playerSelectionClick, currentPick 
       width: 20,
       render: () => (
         <Button
-          disabled={currentPick === 0}
+          disabled={disablePicks()}
           onRow={(record) => ({
             onClick: () => {
               clickHandler(record.key);
