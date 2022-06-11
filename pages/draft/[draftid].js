@@ -1,14 +1,15 @@
 import React, { useContext, useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import firebaseInit from "../../src/helpers/firebaseInit";
+import firebase from "firebase/app";
 
-import { Row, Col, Button, Progress } from "antd";
+import { Row, Col, Button, Progress, Alert } from "antd";
 
 import { Context } from "../../context/provider";
 
 import DraftHistory from "../../src/components/draftHistory";
 import AvailablePlayers from "../../src/components/availablePlayers";
-import Header from "../../src/components/header";
+import TournamentInfo from "../../src/components/tournamentInfo";
 import LiveLeaderboard from "../../src/components/liveLeaderboard";
 import UsersList from "../../src/components/usersList";
 
@@ -17,13 +18,10 @@ import leaderboardMock from "../../src/hardcodedContent/leaderboard";
 
 const useHardCodedContent = process.env.NEXT_PUBLIC_MOCK_ENV === "mock";
 
-const draftBois = ["Xander", "Dewsy"];
-
 const Drafts = () => {
   const database = firebaseInit();
   const router = useRouter();
   const { draftid } = router.query;
-  const draftRef = database.ref("drafts/" + draftid);
 
   const { state, dispatch } = useContext(Context);
   const draftId = draftid;
@@ -33,22 +31,48 @@ const Drafts = () => {
   const [tournamentInfo, setTournamentInfo] = useState([]);
   const [selectedPlayers, setSelectedPlayers] = useState([]);
   const [liveLeaderboard, setLiveLeaderboard] = useState([]);
-  const [pickNo, setPickNo] = useState(0);
+  const [currentPick, setCurrentPick] = useState(0);
+
   const [whosTurn, setWhosTurn] = useState("");
   const [showLeaderboard, setShowLeaderboard] = useState(false);
   const [draftStarted, setDraftStarted] = useState(false);
-  const [users, setUsers] = useState();
+  const [users, setUsers] = useState({});
+  const [draftInfo, setDraftInfo] = useState({});
+  const [draftFinished, setDraftFinished] = useState(false);
 
-  const { isLoggedIn } = state;
+  const { isLoggedIn, userData } = state;
+  console.log(state);
 
   useEffect(() => {
     if (draftid) {
+      const draftRef = database.ref("drafts/" + draftid);
+
+      draftRef.on("value", (snapshot) => {
+        const data = snapshot.val();
+        setDraftInfo(data);
+      });
+    }
+  }, [draftid]);
+
+  useEffect(() => {
+    if (draftid) {
+      const draftRef = database.ref("drafts/" + draftid + "/picks");
+
       draftRef.on("value", (snapshot) => {
         const data = snapshot.val();
         setSelectedPlayers(data);
       });
     }
-  }, [draftid]);
+  }, []);
+
+  useEffect(() => {
+    const currentPickRef = database.ref("drafts/" + draftid + "/currentPick");
+
+    currentPickRef.on("value", (snapshot) => {
+      const data = snapshot.val();
+      setCurrentPick(data);
+    });
+  }, []);
 
   useEffect(() => {
     if (useHardCodedContent) {
@@ -61,8 +85,11 @@ const Drafts = () => {
       getTournamentPlayerData();
       getTournamentLiveLeaderboard();
     }
-    getSelectedPlayers();
   }, []);
+
+  useEffect(() => {
+    getSelectedPlayers();
+  }, [currentPick]);
 
   const getSelectedPlayers = () => {
     const selectedPlayersRef = database.ref("drafts/" + draftId + "/picks");
@@ -71,35 +98,8 @@ const Drafts = () => {
       setSelectedPlayers(data);
       if (data) {
         setDraftStarted(true);
-        let firstEmptyPickIndex = data.findIndex(
-          (el) => el?.player_last_name === undefined
-        );
-        if (firstEmptyPickIndex === -1) {
-          setPickNo(data.length);
-          setWhosTurn("draft complete");
-        } else {
-          setPickNo(firstEmptyPickIndex);
-          setWhosTurn(data[firstEmptyPickIndex]?.username);
-        }
+        setWhosTurn(data[currentPick - 1]);
       }
-    });
-  };
-
-  const writePickData = (draftId, pickNoAdjusted, whosTurn, player) => {
-    const selectedPlayersRef = database.ref("drafts/" + draftId + "/picks");
-
-    // selectedPlayersRef.on("child_changed", function(snapshot) {
-    //   const changedPick = snapshot.val();
-    //   console.log("The updated player title is " + changedPick.player);
-    // });
-    // we can use this to push updates to clients
-
-    const updatePick = selectedPlayersRef.child(pickNoAdjusted);
-    updatePick.update({
-      player_country: player.country,
-      player_first_name: player.first_name,
-      player_last_name: player.last_name,
-      player_id: player.player_id,
     });
   };
 
@@ -117,6 +117,7 @@ const Drafts = () => {
       .then((res) => res.json())
       .then((res) => {
         setTournamentInfo(res.results.tournament);
+        // NEED TO SET AND GET AVAILABLE PLAYERS FROM THE FIREBASE SERVER.
         setAvailablePlayers(res.results.entry_list);
         setIsLoading(false);
       })
@@ -152,99 +153,186 @@ const Drafts = () => {
     }
   };
 
-  const getUsername = (index) => {
+  const getCurrentTurnUser = (index) => {
     let round = 1;
     let pick = 1;
     let overall = index + 1;
     let team_pick = 1;
-    let total_rounds = 32;
-    let total_teams = draftBois.length;
+    let userCount = Object.keys(users).length;
 
-    round = Math.floor((overall - 1) / total_teams + 1);
-    pick = ((overall - 1) % total_teams) + 1;
-    team_pick = round % 2 ? pick : round * total_teams - overall + 1;
-    return draftBois[team_pick - 1];
+    round = Math.floor((overall - 1) / userCount + 1);
+    pick = ((overall - 1) % userCount) + 1;
+    team_pick = round % 2 ? pick : round * userCount - overall + 1;
+
+    return Object.keys(users)[team_pick - 1];
   };
 
   const createInitialDraftArray = (roundsNum) => {
-    let picksNum = roundsNum * draftBois.length;
+    let picksNum = roundsNum * Object.keys(users).length;
     return Array.from({ length: picksNum }).map((_, index) => {
       const id = index + 1;
-      return { id, pick: id, player: "", username: getUsername(index) };
+      return {
+        id,
+        pick: id,
+        userId: getCurrentTurnUser(index),
+        username: users[getCurrentTurnUser(index)]?.displayName,
+      };
     });
   };
 
   const startDraft = () => {
-    setWhosTurn(draftBois[0]);
+    // setWhosTurn(users[0]);
+
     database
       .ref("drafts/" + draftId + "/picks")
-      .update(createInitialDraftArray(16));
+      .update(createInitialDraftArray(12));
+
+    // get the tournament players
+
+    incrementCurrentPick();
     setDraftStarted(true);
+  };
+
+  const incrementCurrentPick = () => {
+    database
+      .ref("drafts/" + draftId)
+      .child("currentPick")
+      .set(firebase.database.ServerValue.increment(1));
+  };
+
+  const writePickData = (draftId, player) => {
+    const selectedPlayersRef = database.ref("drafts/" + draftId + "/picks");
+
+    //ADD A SERVER SIDE CHECK THAT THE USER IS CORRECT AND THE PICK HASN'T BEEN MADE ALREADY
+
+    const updatePick = selectedPlayersRef.child(currentPick - 1);
+    updatePick.update({
+      player_country: player.country,
+      player_first_name: player.first_name,
+      player_last_name: player.last_name,
+      player_id: player.player_id,
+    });
   };
 
   const playerSelectionClick = (id) => {
     if (!whosTurn) return;
     let player = { ...availablePlayers[id] };
-    writePickData(draftId, pickNo, whosTurn, player);
+    writePickData(draftId, player);
 
     setAvailablePlayers(
+      // NEED TO SET AND GET AVAILABLE PLAYERS FROM THE SERVER
       availablePlayers.filter((p) => p.player_id !== player.player_id)
     );
-    // if the pick number is even, pick again, if it's odd change whosTurn
-    setPickNo(pickNo + 1);
+
+    // setPickNo(pickNo + 1);
+    // do this on server
+    if (currentPick < selectedPlayers.length - 1) {
+      incrementCurrentPick();
+    } else {
+      setDraftFinished(true);
+    }
   };
 
-  const getUserList = () => {
+  const getUsers = () => {
     const userListRef = database.ref("drafts/" + draftId + "/users");
     userListRef.on("value", (snapshot) => {
-      const userList = snapshot.val();
-      setUsers(userList)
-    });    
+      const users = snapshot.val();
+      setUsers(users);
+    });
   };
 
   useEffect(() => {
-    getUserList();
+    getUsers();
   }, []);
+
+  const disableStartDraft = () => {
+    if (
+      draftStarted ||
+      !isLoggedIn ||
+      (users && Object.keys(users)?.length < 2)
+    )
+      return true;
+    return false;
+  };
+
+  const draftProgress = (selectedPlayers, currentPick, draftFinished) => {
+    if (isLoading || !currentPick) return "loading";
+
+    if (selectedPlayers)
+      return (
+        <>
+          <Progress
+            percent={(currentPick / selectedPlayers.length) * 100}
+            format={() => `${currentPick} / ${selectedPlayers.length}`}
+            status="active"
+          />
+
+          {draftFinished ? (
+            <h3>DRAFT COMPLETE, GOOD LUCK!</h3>
+          ) : (
+            <h5>Draft Progress</h5>
+          )}
+        </>
+      );
+  };
+
+  const loggedOutNotice = () => {
+    return (
+      !isLoggedIn && (
+        <Alert
+          message="Logged Out!"
+          description="You must be logged in to participate."
+          type="error"
+          closable
+        />
+      )
+    );
+  };
+
+  const draftHeader = () => {
+    return <h1>{draftInfo?.draftName}</h1>;
+  };
+
+  const tournamentHeader = () => {
+    if (isLoading) return "loading";
+    return (
+      liveLeaderboard[0] && (
+        <TournamentInfo
+          tournamentInfo={tournamentInfo}
+          leader={liveLeaderboard}
+        />
+      )
+    );
+  };
+
+  const whosTurnDisplay = () => {
+    if (isLoading || !whosTurn) return "loading";
+
+    const { username } = whosTurn;
+
+    return (
+      selectedPlayers && (
+        <>
+          <span>
+            Picking Now: <h3>{username}</h3>
+          </span>
+        </>
+      )
+    );
+  };
 
   return (
     <>
-      {state.userData.displayName}
+      {loggedOutNotice()}
+      {draftHeader()}
+      {tournamentHeader()}
+      {whosTurnDisplay(whosTurn)}
+      {draftProgress(selectedPlayers, currentPick, draftFinished)}
+
       {!isLoading && (
         <>
-          <Row gutter={16}>
-            <Col className="gutter-row" span={12}>
-              {liveLeaderboard[0] && (
-                <Header
-                  tournamentInfo={tournamentInfo}
-                  leader={liveLeaderboard}
-                />
-              )}
-            </Col>
-            <Col className="gutter-row" span={8}>
-              {selectedPlayers && (
-                <>
-                  <p>Picking Now:</p>
-                  <h3>{whosTurn}</h3>
-                </>
-              )}
-              {/* base this on round number / final round */}
-            </Col>
-            <Col className="gutter-row" span={4}>
-              {selectedPlayers && (
-                <>
-                  <Progress
-                    type="circle"
-                    percent={(pickNo / selectedPlayers.length) * 100}
-                    format={() => `${pickNo} / ${selectedPlayers.length}`}
-                  />
-                  <h5>Draft Progress</h5>
-                </>
-              )}
-              {/* base this on round number / final round */}
-            </Col>
-          </Row>
           <Button
-            disabled={draftStarted}
+            disabled={disableStartDraft()}
             onClick={() => {
               startDraft();
             }}
@@ -259,35 +347,44 @@ const Drafts = () => {
             {showLeaderboard ? "show Draft" : "show Leaderboard"}
           </Button>
 
-          <UsersList users={users}/>
+          <UsersList users={users} />
 
           {!showLeaderboard && (
-            <Row gutter={16}>
-              <Col className="gutter-row" span={12}>
+            <>
+              <Row gutter={16}>
+                {/* <Col className="gutter-row" span={12}> */}
                 <AvailablePlayers
                   availablePlayers={availablePlayers}
                   playerSelectionClick={playerSelectionClick}
+                  currentPick={currentPick}
+                  userData={userData}
+                  currentTurnData={whosTurn}
+                  isLoggedIn={isLoggedIn}
                 />
-              </Col>
-              <Col className="gutter-row" span={12}>
-                <DraftHistory selectedPlayers={selectedPlayers} />
-              </Col>
-            </Row>
+              </Row>
+              <Row>
+                {/* </Col> */}
+                {/* <Col className="gutter-row" span={12}> */}
+                {currentPick > 0 && (
+                  <DraftHistory selectedPlayers={selectedPlayers} />
+                )}
+                {/* </Col> */}
+              </Row>
+            </>
           )}
 
           {showLeaderboard && selectedPlayers && isLoggedIn && (
             <Row gutter={16}>
-              <Col className="gutter-row" span={18}>
-                <LiveLeaderboard
-                  liveLeaderboard={liveLeaderboard}
-                  selectedPlayers={selectedPlayers}
-                />
-              </Col>
+              <LiveLeaderboard
+                liveLeaderboard={liveLeaderboard}
+                selectedPlayers={selectedPlayers}
+              />
             </Row>
           )}
         </>
       )}
-      <p>draft: {draftid}</p>;<button onClick={resetDraft}>delete</button>
+      <p>draft id: {draftid}</p>
+      <button onClick={resetDraft}>delete</button>
     </>
   );
 };

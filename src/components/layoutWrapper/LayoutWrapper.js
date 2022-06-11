@@ -71,15 +71,15 @@ function LayoutWrapper({ children }) {
       const data = snapshot.val();
 
       if (data) {
-        console.log({data})
+        console.log({ data });
         dispatch({
           type: "SET_USER_DRAFT_DATA",
           payload: data,
         });
       } else {
         createNewUser(loginResponse, userId);
-      
-    }});
+      }
+    });
   };
 
   const createNewUser = (loginResponse, userId) => {
@@ -102,34 +102,40 @@ function LayoutWrapper({ children }) {
 
   return (
     <div>
-      <Layout className="layout">
-        <Header>
+      <Layout className="layout" style={{width: "100%"}}>
+        <Header style={{"padding": "0px"}}>
           <div className="logo" />
-          <Menu theme="dark" mode="horizontal" defaultSelectedKeys={["2"]}>
-            <Menu.Item key="1">
-              <Link href="/">Home</Link>
-            </Menu.Item>
-            <Menu.Item key="2">nav 2</Menu.Item>
-            <Menu.Item key="3">nav 3</Menu.Item>
-            {isLoggedIn && (
-              <div style={{ float: "right" }}>
-                <span>{`logged in: ${userData.displayName}`}</span>
-                <Avatar
-                  style={{ margin: "0.5em" }}
-                  src={<Image src={userData.photoURL} />}
-                />
-              </div>
-            )}
-            <Button
-              onClick={() => {
-                signInClickHandler();
-              }}
-            >
-              {isLoggedIn ? "sign out" : "sign in"}
-            </Button>
-          </Menu>
+          <span>
+            <Menu theme="dark" mode="horizontal" defaultSelectedKeys={["1"]}>
+              <Menu.Item key="1">
+                <Link href="/">Home</Link>
+              </Menu.Item>
+
+              <span style={{ float: "right" }}>
+                {isLoggedIn && (
+                  <>
+                    <span>{userData.displayName}</span>
+                    <Avatar
+                      style={{ margin: "0.5em" }}
+                      src={<Image src={userData.photoURL} />}
+                    />
+                  </>
+                )}
+                <Button
+                  onClick={() => {
+                    signInClickHandler();
+                  }}
+                  style={{"margin-right": "5px"}}
+                >
+                  {isLoggedIn ? "sign out" : "sign in"}
+                </Button>
+              </span>
+              {/* <Menu.Item key="2">nav 2</Menu.Item>
+            <Menu.Item key="3">nav 3</Menu.Item> */}
+            </Menu>
+          </span>
         </Header>
-        <Content style={{ padding: "0 50px" }}>
+        <Content style={{ padding: "0px 20px" }}>
           <Breadcrumb style={{ margin: "16px 0" }}>
             <Breadcrumb.Item>Home</Breadcrumb.Item>
             <Breadcrumb.Item>List</Breadcrumb.Item>

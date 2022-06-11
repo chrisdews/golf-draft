@@ -32,23 +32,6 @@ const JoinForm = () => {
 
   const userRef = database.ref("users/" + userId);
 
-  // const createDraftGame = (values, userId) => {
-  //   const newDraft = database.ref("drafts/");
-  //   const { draftName } = values;
-
-  //   const draft = newDraft.push({
-  //     users: { userId },
-  //     draftName: draftName,
-  //   });
-
-  //   const newDraftId = draft.key;
-  //   const existingUser = database.ref("users/" + userId);
-  //   existingUser.child("drafts").child(newDraftId).set({ name: draftName });
-  //   router.push({
-  //     pathname: `/draft/${newDraftId}`,
-  //   });
-  // };
-
   const checkForExistingUser = (users) => {
     if (!userId) {
       console.log("user needs to log in");
@@ -91,7 +74,6 @@ const JoinForm = () => {
       if (data) {
         //check user isn't in the draft already.
         const isExistingUser = checkForExistingUser(data?.users);
-        console.log({ isExistingUser });
         if (isExistingUser) {
           console.log("user already in draft");
         } else {
@@ -101,21 +83,14 @@ const JoinForm = () => {
 
           addDraftToUser(draftId, data?.draftName);
 
-          // router.push({
-          //   pathname: `/draft/${draftId}`,
-          // });
+          router.push({
+            pathname: `/draft/${draftId}`,
+          });
         }
       } else {
         console.log("draft doesn't exist");
       }
     });
-
-    //add current user to the draft.
-    //navigate to the draft.
-
-    // router.push({
-    //   pathname: `/draft/${draftId}`,
-    // });
   };
 
   const onFinish = (values) => {

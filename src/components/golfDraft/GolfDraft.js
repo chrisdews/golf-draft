@@ -2,7 +2,7 @@ import React, { useContext, useEffect, useState } from "react";
 import { Row, Col, Button, Progress } from "antd";
 import Link from "next/link";
 
-import Header from "../header";
+import Header from "../tournamentInfo";
 import apiMock from "../../hardcodedContent/players";
 import leaderboardMock from "../../hardcodedContent/leaderboard";
 import UserDraftsList from "../../components/userDraftsList";

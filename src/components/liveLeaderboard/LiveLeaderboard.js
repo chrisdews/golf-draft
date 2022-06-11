@@ -6,35 +6,40 @@ import countryIsoConverter from "../../helpers/countryIsoCoverter";
 function LiveLeaderboard({ liveLeaderboard, selectedPlayers }) {
   const columns = [
     {
-      title: "Position",
+      title: "",
       dataIndex: "position",
-      width: 20,
+      width: 10,
     },
     {
       title: "Player",
       dataIndex: "player",
-      width: 50,
+      width: 30,
     },
     {
-      title: "Country",
+      title: "",
       dataIndex: "countryIso",
-      width: 20,
-      // render: (theImageURL) => <img alt={theImageURL} src={theImageURL} />,
+      width: 10,
+      render: (flagImage) => (
+        <img
+          alt={flagImage}
+          src={`/img/country-flags-main/svg/${flagImage}.svg`}
+        />
+      ),
     },
     {
       title: "To Par",
       dataIndex: "totalToPar",
-      width: 20,
+      width: 15,
     },
     {
-      title: "Holes Played",
+      title: "Hole",
       dataIndex: "holesPlayed",
-      width: 20,
+      width: 15,
     },
     {
       title: "Owner",
       dataIndex: "owner",
-      width: 20,
+      width: 30,
     },
   ];
 
@@ -45,9 +50,11 @@ function LiveLeaderboard({ liveLeaderboard, selectedPlayers }) {
     let firstName = liveLeaderboard[i].first_name;
     let lastName = liveLeaderboard[i].last_name;
     let position = liveLeaderboard[i].position;
-    let countryIso = liveLeaderboard[i].country
+    let countryIso = selectedPlayers[i]?.player_country
+      ? countryIsoConverter(selectedPlayers[i]?.player_country)
+      : "";
     let totalToPar = liveLeaderboard[i].total_to_par;
-    let holes_played = liveLeaderboard[i].holes_played
+    let holes_played = liveLeaderboard[i].holes_played;
     let selected =
       selectedPlayers &&
       selectedPlayers.find((selected) => selected.player_id === playerId);
@@ -75,7 +82,7 @@ function LiveLeaderboard({ liveLeaderboard, selectedPlayers }) {
       <Table
         columns={columns}
         dataSource={data}
-        pagination={{ pageSize: 50 }}
+        pagination={false}
         scroll={{ y: 540 }}
         size="small"
       />

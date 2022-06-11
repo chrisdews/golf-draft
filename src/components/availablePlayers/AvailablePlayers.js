@@ -5,47 +5,62 @@ import { Table, Button } from "antd";
 import "antd/dist/antd.css";
 import countryIsoConverter from "../../helpers/countryIsoCoverter";
 
-function AvailablePlayers({ availablePlayers, playerSelectionClick }) {
+function AvailablePlayers({
+  availablePlayers,
+  playerSelectionClick,
+  currentPick,
+  userData,
+  currentTurnData,
+  isLoggedIn,
+}) {
+  if (!isLoggedIn) return null;
+
   const clickHandler = (record) => {
     if (window.confirm(`Are you sure you wish to draft ${record.player}?`)) {
       playerSelectionClick(record.key);
     }
   };
 
+  const disablePicks = () => {
+    if (
+      currentPick !== 0 &&
+      currentTurnData &&
+      userData?.uid === currentTurnData.userId
+    )
+      return false;
+    return true;
+  };
+
   const columns = [
     {
       title: "WR",
       dataIndex: "wr",
-      width: 20,
+      width: 15,
     },
     {
       title: "",
       dataIndex: "flagImage",
-      width: 20,
-      render: (theImageURL) => <img alt={theImageURL} src={theImageURL} />,
+      width: 10,
+      render: (flagImage) => (
+        <img
+          alt={flagImage}
+          src={`/img/country-flags-main/svg/${flagImage}.svg`}
+        />
+      ),
     },
     {
       title: "Player",
       dataIndex: "player",
-      width: 50,
-      render: (text) => (
-        <a
-          onRow={(record) => ({
-            onClick: () => {
-              clickHandler(record.key);
-            },
-          })}
-        >
-          {text}
-        </a>
-      ),
+      width: 35,
+      render: (text) => <a>{text}</a>,
     },
     {
       title: "",
       dataIndex: "Button",
-      width: 20,
+      width: 25,
       render: () => (
         <Button
+          disabled={disablePicks()}
           onRow={(record) => ({
             onClick: () => {
               clickHandler(record.key);
@@ -64,9 +79,7 @@ function AvailablePlayers({ availablePlayers, playerSelectionClick }) {
     let firstName = availablePlayers[i].first_name;
     let lastName = availablePlayers[i].last_name;
     let flagImage = availablePlayers[i].country
-      ? countryIsoConverter(
-          availablePlayers[i].country
-        )
+      ? countryIsoConverter(availablePlayers[i].country)
       : "";
 
     data.push({
@@ -83,14 +96,9 @@ function AvailablePlayers({ availablePlayers, playerSelectionClick }) {
     <div style={style}>
       <h3>Available Players</h3>
       <Table
-        onRow={(record) => ({
-          onClick: () => {
-            clickHandler(record);
-          },
-        })}
         columns={columns}
         dataSource={data}
-        pagination={{ pageSize: 50 }}
+        pagination={false}
         scroll={{ y: 540 }}
         size="small"
       />
