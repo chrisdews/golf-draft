@@ -7,12 +7,12 @@ function draftHistory({ selectedPlayers }) {
     {
       title: "Pick",
       dataIndex: "pick",
-      width: 50,
+      width: 20,
     },
     {
       title: "User",
       dataIndex: "username",
-      width: 50,
+      width: 40,
     },
     {
       title: "Player",
@@ -23,7 +23,12 @@ function draftHistory({ selectedPlayers }) {
       title: "",
       dataIndex: "imageURL",
       width: 20,
-      render: (theImageURL) => <img alt={theImageURL} src={theImageURL} />,
+      render: (flagImage) => (
+        <img
+          alt={flagImage}
+          src={`/img/country-flags-main/svg/${flagImage}.svg`}
+        />
+      ),
     },
   ];
 
@@ -59,7 +64,7 @@ function draftHistory({ selectedPlayers }) {
       <Table
         columns={columns}
         dataSource={data}
-        pagination={{ pageSize: 50 }}
+        pagination={false}
         scroll={{ y: 540 }}
         size="small"
       />

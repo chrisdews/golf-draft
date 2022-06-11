@@ -1,4 +1,5 @@
 import "antd/dist/antd.css";
+import "./styles.css"
 import { ContextProvider } from "../context/provider";
 import LayoutWrapper from "../src/components/layoutWrapper";
 

@@ -3,7 +3,7 @@ import { useRouter } from "next/router";
 import firebaseInit from "../../src/helpers/firebaseInit";
 import firebase from "firebase/app";
 
-import { Row, Col, Button, Progress } from "antd";
+import { Row, Col, Button, Progress, Alert } from "antd";
 
 import { Context } from "../../context/provider";
 
@@ -187,6 +187,8 @@ const Drafts = () => {
       .ref("drafts/" + draftId + "/picks")
       .update(createInitialDraftArray(12));
 
+    // get the tournament players
+
     incrementCurrentPick();
     setDraftStarted(true);
   };
@@ -260,9 +262,9 @@ const Drafts = () => {
       return (
         <>
           <Progress
-            type="circle"
             percent={(currentPick / selectedPlayers.length) * 100}
             format={() => `${currentPick} / ${selectedPlayers.length}`}
+            status="active"
           />
 
           {draftFinished ? (
@@ -275,7 +277,16 @@ const Drafts = () => {
   };
 
   const loggedOutNotice = () => {
-    return !isLoggedIn && <h3>PLEASE LOG IN TO PARTICIPATE</h3>;
+    return (
+      !isLoggedIn && (
+        <Alert
+          message="Logged Out!"
+          description="You must be logged in to participate."
+          type="error"
+          closable
+        />
+      )
+    );
   };
 
   const draftHeader = () => {
@@ -339,8 +350,9 @@ const Drafts = () => {
           <UsersList users={users} />
 
           {!showLeaderboard && (
-            <Row gutter={16}>
-              <Col className="gutter-row" span={12}>
+            <>
+              <Row gutter={16}>
+                {/* <Col className="gutter-row" span={12}> */}
                 <AvailablePlayers
                   availablePlayers={availablePlayers}
                   playerSelectionClick={playerSelectionClick}
@@ -349,28 +361,29 @@ const Drafts = () => {
                   currentTurnData={whosTurn}
                   isLoggedIn={isLoggedIn}
                 />
-              </Col>
-              <Col className="gutter-row" span={12}>
+              </Row>
+              <Row>
+                {/* </Col> */}
+                {/* <Col className="gutter-row" span={12}> */}
                 {currentPick > 0 && (
                   <DraftHistory selectedPlayers={selectedPlayers} />
                 )}
-              </Col>
-            </Row>
+                {/* </Col> */}
+              </Row>
+            </>
           )}
 
           {showLeaderboard && selectedPlayers && isLoggedIn && (
             <Row gutter={16}>
-              <Col className="gutter-row" span={18}>
-                <LiveLeaderboard
-                  liveLeaderboard={liveLeaderboard}
-                  selectedPlayers={selectedPlayers}
-                />
-              </Col>
+              <LiveLeaderboard
+                liveLeaderboard={liveLeaderboard}
+                selectedPlayers={selectedPlayers}
+              />
             </Row>
           )}
         </>
       )}
-      <p>draft: {draftid}</p>
+      <p>draft id: {draftid}</p>
       <button onClick={resetDraft}>delete</button>
     </>
   );
