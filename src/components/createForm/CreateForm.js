@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useContext } from "react";
-import { Form, Input, Modal, Button, Avatar, Typography } from "antd";
+import { Form, Input, Modal, Button, Avatar, Typography, Alert } from "antd";
 import { SmileOutlined, UserOutlined } from "@ant-design/icons";
 import { Context } from "../../../context/provider";
 import firebaseInit from "../../helpers/firebaseInit";
@@ -98,6 +98,7 @@ const CreateForm = () => {
     const draft = draftsRef.push({
       draftName: draftName,
       currentPick: 0,
+      draftFinished: false,
       users: "",
     });
 
@@ -127,73 +128,91 @@ const CreateForm = () => {
     createDraftGame(values, userId);
   };
 
-  return (
-    <Form.Provider
-      onFormFinish={(name, { values, forms }) => {
-        if (name === "userForm") {
-          const { basicForm } = forms;
-          const users = basicForm.getFieldValue("users") || [];
-          basicForm.setFieldsValue({
-            users: [...users, values],
-          });
-          setVisible(false);
-        }
-      }}
-    >
-      <Form {...layout} name="basicForm" onFinish={onFinish}>
-        <Form.Item
-          name="draftName"
-          label="Draft Name"
-          rules={[
-            {
-              required: true,
-            },
-          ]}
-        >
-          <Input />
-        </Form.Item>
-        <Form.Item
-          label="User List"
-          shouldUpdate={(prevValues, curValues) =>
-            prevValues.users !== curValues.users
-          }
-        >
-          {({ getFieldValue }) => {
-            const users = getFieldValue("users") || [];
-            return users.length ? (
-              <ul>
-                {users.map((user, index) => (
-                  <li key={index} className="user">
-                    <Avatar icon={<UserOutlined />} />
-                    {user.name} - {user.email}
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <Typography.Text className="ant-form-text" type="secondary">
-                ( <SmileOutlined /> No user yet. )
-              </Typography.Text>
-            );
-          }}
-        </Form.Item>
-        <Form.Item {...tailLayout}>
-          <Button htmlType="submit" type="primary">
-            Submit
-          </Button>
-          <Button
-            htmlType="button"
-            style={{
-              margin: "0 8px",
-            }}
-            onClick={showUserModal}
-          >
-            Add User
-          </Button>
-        </Form.Item>
-      </Form>
+  const loggedOutNotice = () => {
+    return (
+      !userId && (
+        <Alert
+          message="Logged Out!"
+          description="You must be logged in to participate."
+          type="error"
+          closable
+        />
+      )
+    );
+  };
 
-      <ModalForm visible={visible} onCancel={hideUserModal} />
-    </Form.Provider>
+  return (
+    <>
+      <Form.Provider
+        onFormFinish={(name, { values, forms }) => {
+          if (name === "userForm") {
+            const { basicForm } = forms;
+            const users = basicForm.getFieldValue("users") || [];
+            basicForm.setFieldsValue({
+              users: [...users, values],
+            });
+            setVisible(false);
+          }
+        }}
+      >
+        <Form {...layout} name="basicForm" onFinish={onFinish}>
+          <Form.Item
+            name="draftName"
+            label="Draft Name"
+            rules={[
+              {
+                required: true,
+              },
+            ]}
+          >
+            <Input />
+          </Form.Item>
+          This will be the visible name your draft pals see when they join. It currently can <b>not</b> be changed.
+          {/* <Form.Item
+            label="User List"
+            shouldUpdate={(prevValues, curValues) =>
+              prevValues.users !== curValues.users
+            }
+          >
+            {({ getFieldValue }) => {
+              const users = getFieldValue("users") || [];
+              return users.length ? (
+                <ul>
+                  {users.map((user, index) => (
+                    <li key={index} className="user">
+                      <Avatar icon={<UserOutlined />} />
+                      {user.name} - {user.email}
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <Typography.Text className="ant-form-text" type="secondary">
+                  ( <SmileOutlined /> No user yet. )
+                </Typography.Text>
+              );
+            }}
+          </Form.Item> */}
+          <Form.Item {...tailLayout}>
+            <Button htmlType="submit" type="primary" style={{"margin-top":"20px"}}>
+              Submit
+            </Button>
+            {/* <Button
+              htmlType="button"
+              style={{
+                margin: "0 8px",
+              }}
+              onClick={showUserModal}
+            >
+              Add User
+            </Button> */}
+          </Form.Item>
+        </Form>
+
+        <ModalForm visible={visible} onCancel={hideUserModal} />
+      </Form.Provider>
+
+      {loggedOutNotice()}
+    </>
   );
 };
 
