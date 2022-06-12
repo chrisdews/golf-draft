@@ -4,11 +4,11 @@ import firebase from "firebase/app";
 import firebaseLogin from "../../helpers/firebaseLogin";
 import firebaseInit from "../../helpers/firebaseInit";
 import { Context } from "../../../context/provider";
+import { GoogleOutlined } from "@ant-design/icons";
+import { Button, Layout, Menu, Breadcrumb, Avatar, Image } from "antd";
 
 const database = firebaseInit();
 
-import { Button, Layout, Menu, Breadcrumb, Avatar, Image } from "antd";
-import { GoogleOutlined } from "@ant-design/icons";
 const { Header, Content, Footer } = Layout;
 
 function LayoutWrapper({ children }) {

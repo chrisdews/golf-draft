@@ -9,10 +9,10 @@ import apiMock from "../../hardcodedContent/players";
 import leaderboardMock from "../../hardcodedContent/leaderboard";
 import UserDraftsList from "../../components/userDraftsList";
 import { Context } from "../../../context/provider";
+import firebaseInit from "../../helpers/firebaseInit";
 
 const useHardCodedContent = process.env.NEXT_PUBLIC_MOCK_ENV === "mock";
 
-import firebaseInit from "../../helpers/firebaseInit";
 
 const database = firebaseInit();
 
