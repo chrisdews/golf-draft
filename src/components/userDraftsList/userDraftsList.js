@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import Link from 'next/link'
 
 const userDraftsList = ({ drafts }) => {
@@ -15,7 +15,6 @@ const userDraftsList = ({ drafts }) => {
 
   return (
     <div>
-      User's Drafts
       {userDrafts()}
     </div>
   );

@@ -4,6 +4,7 @@ import firebaseInit from "../../src/helpers/firebaseInit";
 import firebase from "firebase/app";
 
 import { Row, Col, Button, Progress, Alert } from "antd";
+import { CheckSquareOutlined, LoadingOutlined } from "@ant-design/icons";
 
 import { Context } from "../../context/provider";
 
@@ -27,7 +28,13 @@ const Drafts = () => {
   const draftId = draftid;
 
   const [isLoading, setIsLoading] = useState(true);
-  const [availablePlayers, setAvailablePlayers] = useState([]);
+
+  // used once on draft creation (must be in fusion object format)
+  const [playerEntryList, setPlayerEntryList] = useState({});
+
+  // updated with each pick
+  const [availablePlayerList, setAvailablePlayerList] = useState({});
+
   const [tournamentInfo, setTournamentInfo] = useState([]);
   const [selectedPlayers, setSelectedPlayers] = useState([]);
   const [liveLeaderboard, setLiveLeaderboard] = useState([]);
@@ -39,9 +46,9 @@ const Drafts = () => {
   const [users, setUsers] = useState({});
   const [draftInfo, setDraftInfo] = useState({});
   const [draftFinished, setDraftFinished] = useState(false);
+  const [copyClicked, setCopyClicked] = useState(false);
 
   const { isLoggedIn, userData } = state;
-  console.log(state);
 
   useEffect(() => {
     if (draftid) {
@@ -75,9 +82,21 @@ const Drafts = () => {
   }, []);
 
   useEffect(() => {
+    const availablePlayersRef = database.ref(
+      "drafts/" + draftid + "/availablePlayers"
+    );
+
+    availablePlayersRef.on("value", (snapshot) => {
+      const data = snapshot.val();
+
+      setAvailablePlayerList(data);
+    });
+  }, [whosTurn]);
+
+  useEffect(() => {
     if (useHardCodedContent) {
       setTournamentInfo(apiMock.results.tournament);
-      setAvailablePlayers(apiMock.results.entry_list);
+      setPlayerEntryList(Object.assign({}, apiMock.results.entry_list));
       let leaderboard = leaderboardMock.leaderboard;
       setLiveLeaderboard(leaderboard);
       setIsLoading(false);
@@ -89,6 +108,17 @@ const Drafts = () => {
 
   useEffect(() => {
     getSelectedPlayers();
+  }, [currentPick]);
+
+  useEffect(() => {
+    const draftRef = database.ref("drafts/" + draftId);
+
+    draftRef.on("value", (snapshot) => {
+      const data = snapshot.val();
+      if (data?.draftFinished) {
+        setDraftFinished(true);
+      }
+    });
   }, [currentPick]);
 
   const getSelectedPlayers = () => {
@@ -104,6 +134,7 @@ const Drafts = () => {
   };
 
   const getTournamentPlayerData = async () => {
+    console.log("get tournament api called ====");
     await fetch(
       `https://golf-leaderboard-data.p.rapidapi.com/entry-list/${process.env.NEXT_PUBLIC_TOURNAMENT_ID}`,
       {
@@ -118,7 +149,8 @@ const Drafts = () => {
       .then((res) => {
         setTournamentInfo(res.results.tournament);
         // NEED TO SET AND GET AVAILABLE PLAYERS FROM THE FIREBASE SERVER.
-        setAvailablePlayers(res.results.entry_list);
+        // it should be object not array.
+        setPlayerEntryList(Object.assign({}, res.results.entry_list));
         setIsLoading(false);
       })
       .catch((err) => {
@@ -127,6 +159,8 @@ const Drafts = () => {
   };
 
   const getTournamentLiveLeaderboard = async () => {
+    console.log("get leaderboard api called ====");
+
     await fetch(
       `https://golf-leaderboard-data.p.rapidapi.com/leaderboard/${process.env.NEXT_PUBLIC_TOURNAMENT_ID}`,
       {
@@ -149,7 +183,20 @@ const Drafts = () => {
   const resetDraft = async () => {
     if (window.confirm("Are you sure you wish to delete this item?")) {
       database.ref("drafts/" + draftId + "/picks").remove();
+      database
+        .ref("drafts/" + draftId + "/availablePlayers")
+        .set(playerEntryList);
+      database
+        .ref("drafts/" + draftId)
+        .child("currentPick")
+        .set(0);
+      database
+        .ref("drafts/" + draftId)
+        .child("draftFinished")
+        .set(false);
+
       setDraftStarted(false);
+      setDraftFinished(false);
     }
   };
 
@@ -185,12 +232,23 @@ const Drafts = () => {
 
     database
       .ref("drafts/" + draftId + "/picks")
-      .update(createInitialDraftArray(12));
-
+      .update(createInitialDraftArray(4));
+    //this should be 8 or 12.. configurable later?
     // get the tournament players
+
+    setInitialDraftPlayerData();
 
     incrementCurrentPick();
     setDraftStarted(true);
+  };
+
+  const setInitialDraftPlayerData = () => {
+    const availablePlayersRef = database.ref(
+      "drafts/" + draftId + "/availablePlayers"
+    );
+
+    console.log(Array.isArray(playerEntryList), { playerEntryList });
+    availablePlayersRef.update(playerEntryList);
   };
 
   const incrementCurrentPick = () => {
@@ -207,29 +265,52 @@ const Drafts = () => {
 
     const updatePick = selectedPlayersRef.child(currentPick - 1);
     updatePick.update({
-      player_country: player.country,
-      player_first_name: player.first_name,
-      player_last_name: player.last_name,
-      player_id: player.player_id,
+      player_country: player?.country,
+      player_first_name: player?.first_name,
+      player_last_name: player?.last_name,
+      player_id: player?.player_id,
     });
+  };
+
+  const updateAvailablePlayersList = (draftId, player, id, whosTurn) => {
+    const selectedPlayersRef = database.ref(
+      "drafts/" + draftId + "/availablePlayers"
+    );
+
+    const selectedPlayerRef = selectedPlayersRef.child(id);
+
+    selectedPlayerRef.update({ selectedBy: whosTurn });
+  };
+
+  const updateServerDraftFinished = (draftId) => {
+    database
+      .ref("drafts/" + draftId)
+      .child("draftFinished")
+      .set(true);
   };
 
   const playerSelectionClick = (id) => {
     if (!whosTurn) return;
-    let player = { ...availablePlayers[id] };
+    let player = { ...availablePlayerList[id] };
     writePickData(draftId, player);
 
-    setAvailablePlayers(
-      // NEED TO SET AND GET AVAILABLE PLAYERS FROM THE SERVER
-      availablePlayers.filter((p) => p.player_id !== player.player_id)
-    );
+    updateAvailablePlayersList(draftId, player, id, whosTurn);
+
+    // setPlayerEntryList(
+    //   // NEED TO SET AND GET AVAILABLE PLAYERS FROM THE SERVER
+    //   playerEntryList.filter((p) => p.player_id !== player.player_id)
+    // );
 
     // setPickNo(pickNo + 1);
     // do this on server
-    if (currentPick < selectedPlayers.length - 1) {
+
+    if (currentPick < selectedPlayers.length) {
       incrementCurrentPick();
     } else {
+      updateServerDraftFinished(draftId);
       setDraftFinished(true);
+      incrementCurrentPick();
+      //this needs to be set on the db
     }
   };
 
@@ -245,28 +326,38 @@ const Drafts = () => {
     getUsers();
   }, []);
 
+  // set this to <2 after test
   const disableStartDraft = () => {
+    if (
+      users &&
+      userData &&
+      userData.uid &&
+      users[userData.uid]?.role !== "admin"
+    )
+      return true;
+
     if (
       draftStarted ||
       !isLoggedIn ||
-      (users && Object.keys(users)?.length < 2)
+      (users && Object.keys(users)?.length < 1)
     )
       return true;
+
     return false;
   };
 
   const draftProgress = (selectedPlayers, currentPick, draftFinished) => {
-    if (isLoading || !currentPick) return "loading";
+    if (isLoading) return <LoadingOutlined />;
+    if (!currentPick) return null;
 
     if (selectedPlayers)
       return (
         <>
           <Progress
             percent={(currentPick / selectedPlayers.length) * 100}
-            format={() => `${currentPick} / ${selectedPlayers.length}`}
-            status="active"
+            format={() => `${currentPick - 1} / ${selectedPlayers.length}`}
+            status={draftFinished ? "" : "active"}
           />
-
           {draftFinished ? (
             <h3>DRAFT COMPLETE, GOOD LUCK!</h3>
           ) : (
@@ -294,7 +385,8 @@ const Drafts = () => {
   };
 
   const tournamentHeader = () => {
-    if (isLoading) return "loading";
+    if (isLoading) return <LoadingOutlined />;
+
     return (
       liveLeaderboard[0] && (
         <TournamentInfo
@@ -306,7 +398,9 @@ const Drafts = () => {
   };
 
   const whosTurnDisplay = () => {
-    if (isLoading || !whosTurn) return "loading";
+    if (isLoading) return <LoadingOutlined />;
+
+    if (!whosTurn) return null;
 
     const { username } = whosTurn;
 
@@ -321,6 +415,28 @@ const Drafts = () => {
     );
   };
 
+  const adminResetButton = () => {
+    if (
+      users &&
+      userData &&
+      userData.uid &&
+      users[userData.uid]?.role === "admin"
+    )
+      return <Button onClick={resetDraft}>RESET DRAFT</Button>;
+    return null;
+  };
+
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText(draftId).then(
+      function () {
+        setCopyClicked(true);
+      },
+      function (err) {
+        setCopyClicked(false);
+      }
+    );
+  };
+
   return (
     <>
       {loggedOutNotice()}
@@ -331,44 +447,54 @@ const Drafts = () => {
 
       {!isLoading && (
         <>
+          <p>
+            Draft ID: {draftid}{" "}
+            <Button onClick={copyToClipboard}>
+              Copy SHARE ID to Clipboard
+            </Button>
+            {copyClicked && (
+              <CheckSquareOutlined
+                style={{ color: "green", "marginLeft": "10px" }}
+              />
+            )}
+          </p>
+
           <Button
             disabled={disableStartDraft()}
             onClick={() => {
               startDraft();
             }}
           >
-            'Start Draft'
+            Start Draft
           </Button>
           <Button
             onClick={() => {
               setShowLeaderboard(!showLeaderboard);
             }}
           >
-            {showLeaderboard ? "show Draft" : "show Leaderboard"}
+            {showLeaderboard ? "Show Draft" : "Show Leaderboard"}
           </Button>
+          {!draftStarted && <p>Only the draft admin can start the draft</p>}
 
           <UsersList users={users} />
 
           {!showLeaderboard && (
             <>
               <Row gutter={16}>
-                {/* <Col className="gutter-row" span={12}> */}
                 <AvailablePlayers
-                  availablePlayers={availablePlayers}
+                  availablePlayerList={availablePlayerList}
                   playerSelectionClick={playerSelectionClick}
                   currentPick={currentPick}
                   userData={userData}
                   currentTurnData={whosTurn}
                   isLoggedIn={isLoggedIn}
+                  draftFinished={draftFinished}
                 />
               </Row>
               <Row>
-                {/* </Col> */}
-                {/* <Col className="gutter-row" span={12}> */}
                 {currentPick > 0 && (
                   <DraftHistory selectedPlayers={selectedPlayers} />
                 )}
-                {/* </Col> */}
               </Row>
             </>
           )}
@@ -383,8 +509,7 @@ const Drafts = () => {
           )}
         </>
       )}
-      <p>draft id: {draftid}</p>
-      <button onClick={resetDraft}>delete</button>
+      {adminResetButton()}
     </>
   );
 };

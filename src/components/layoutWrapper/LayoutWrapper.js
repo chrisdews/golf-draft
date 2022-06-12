@@ -8,6 +8,7 @@ import { Context } from "../../../context/provider";
 const database = firebaseInit();
 
 import { Button, Layout, Menu, Breadcrumb, Avatar, Image } from "antd";
+import { GoogleOutlined } from "@ant-design/icons";
 const { Header, Content, Footer } = Layout;
 
 function LayoutWrapper({ children }) {
@@ -102,19 +103,21 @@ function LayoutWrapper({ children }) {
 
   return (
     <div>
-      <Layout className="layout" style={{width: "100%"}}>
-        <Header style={{"padding": "0px"}}>
+      <Layout className="layout" style={{ width: "100%" }}>
+        <Header style={{ padding: "0px" }}>
           <div className="logo" />
           <span>
             <Menu theme="dark" mode="horizontal" defaultSelectedKeys={["1"]}>
               <Menu.Item key="1">
-                <Link href="/">Home</Link>
+                <Link href="/">GOLF DRAFT</Link>
               </Menu.Item>
 
               <span style={{ float: "right" }}>
                 {isLoggedIn && (
                   <>
-                    <span>{userData.displayName}</span>
+                    <span>
+                      {userData?.displayName?.split(" ")[0] || "username"}
+                    </span>
                     <Avatar
                       style={{ margin: "0.5em" }}
                       src={<Image src={userData.photoURL} />}
@@ -125,7 +128,7 @@ function LayoutWrapper({ children }) {
                   onClick={() => {
                     signInClickHandler();
                   }}
-                  style={{"margin-right": "5px"}}
+                  style={{ "margin-right": "15px" }}
                 >
                   {isLoggedIn ? "sign out" : "sign in"}
                 </Button>
@@ -135,18 +138,16 @@ function LayoutWrapper({ children }) {
             </Menu>
           </span>
         </Header>
-        <Content style={{ padding: "0px 20px" }}>
-          <Breadcrumb style={{ margin: "16px 0" }}>
+        <Content style={{ padding: "10px 20px", "min-height": "85vh" }}>
+          {/* <Breadcrumb style={{ margin: "16px 0" }}>
             <Breadcrumb.Item>Home</Breadcrumb.Item>
             <Breadcrumb.Item>List</Breadcrumb.Item>
             <Breadcrumb.Item>App</Breadcrumb.Item>
-          </Breadcrumb>
+          </Breadcrumb> */}
 
           <div className="site-layout-content">{children}</div>
         </Content>
-        <Footer style={{ textAlign: "center" }}>
-          GolfDraft ©2021 Created by Chris Dews & Xander Johnston
-        </Footer>
+        <Footer style={{ textAlign: "center" }}>GolfDraft ©2021</Footer>
       </Layout>
     </div>
   );
