@@ -40,8 +40,5 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
-  },
-  "devDependencies": {
-    "@next/eslint-plugin-next": "^12.1.6"
   }
 }
