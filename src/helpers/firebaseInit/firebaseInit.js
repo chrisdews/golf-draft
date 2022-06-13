@@ -9,7 +9,7 @@ const firebaseInit = () => {
     const firebaseConfig = {
         apiKey: process.env.NEXT_PUBLIC_FIREBASE_KEY,
         authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-        databaseURL: process.env.NEXT_PUBLIC_FIREBASE_DB_URL,
+        databaseURL: "https://golf-draft-1e6c3-default-rtdb.europe-west1.firebasedatabase.app",
         storageBucket: process.env.NEXT_PUBLIC_STORAGE_BUCKET,
       };
     
