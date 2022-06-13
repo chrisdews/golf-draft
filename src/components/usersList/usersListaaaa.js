@@ -1,5 +1,4 @@
 import { Avatar, List } from "antd";
-import PropTypes from "prop-types";
 import React from "react";
 
 const UsersList = ({ users }) => {

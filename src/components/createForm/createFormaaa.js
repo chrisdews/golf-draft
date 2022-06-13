@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef, useContext } from "react";
 import { Form, Input, Modal, Button, Avatar, Typography, Alert } from "antd";
-import { SmileOutlined, UserOutlined } from "@ant-design/icons";
 import { Context } from "../../../context/provider";
 import firebaseInit from "../../helpers/firebaseInit";
 
