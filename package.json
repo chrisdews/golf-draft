@@ -24,10 +24,7 @@
     "dev": "next",
     "build": "next build",
     "start": "next start",
-    "serve": "npm run build && firebase emulators:start --only functions,hosting",
-    "shell": "npm run build && firebase functions:shell",
-    "deploy": "firebase deploy --only functions,hosting",
-    "logs": "firebase functions:log"
+    "deploy": "firebase deploy --only functions,hosting"
   },
   "eslintConfig": {
     "extends": [
