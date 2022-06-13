@@ -112,7 +112,7 @@ function LayoutWrapper({ children }) {
                 <Link href="/">GOLF DRAFT</Link>
               </Menu.Item>
 
-              <span style={{ float: "right" }}>
+              <span style={{ display: "flex", justifyContent: "flex-end", width: "100%", alignItems: "center" }}>
                 {isLoggedIn && (
                   <>
                     <span>
@@ -128,7 +128,7 @@ function LayoutWrapper({ children }) {
                   onClick={() => {
                     signInClickHandler();
                   }}
-                  style={{ "margin-right": "15px" }}
+                  style={{ "marginRight": "15px" }}
                 >
                   {isLoggedIn ? "sign out" : "sign in"}
                 </Button>
@@ -138,7 +138,7 @@ function LayoutWrapper({ children }) {
             </Menu>
           </span>
         </Header>
-        <Content style={{ padding: "10px 20px", "min-height": "85vh" }}>
+        <Content style={{ padding: "10px 20px", "minHeight": "85vh" }}>
           {/* <Breadcrumb style={{ margin: "16px 0" }}>
             <Breadcrumb.Item>Home</Breadcrumb.Item>
             <Breadcrumb.Item>List</Breadcrumb.Item>
