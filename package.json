@@ -9,6 +9,7 @@
     "antd": "^4.15.6",
     "axios": "^0.21.1",
     "firebase": "^8.3.2",
+    "firebase-functions": "^3.21.2",
     "next": "12.1.6",
     "rc-queue-anim": "^2.0.0",
     "rc-tween-one": "^3.0.6",
@@ -18,10 +19,15 @@
     "svg-country-flags": "^1.2.10",
     "web-vitals": "^1.0.1"
   },
+  "main": "firebaseFunctions.js",
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start"
+    "dev": "next src/",
+    "build": "next build src/",
+    "start": "next start src/",
+    "serve": "npm run build && firebase emulators:start --only functions,hosting",
+    "shell": "npm run build && firebase functions:shell",
+    "deploy": "firebase deploy --only functions,hosting",
+    "logs": "firebase functions:log"
   },
   "eslintConfig": {
     "extends": [
