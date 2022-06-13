@@ -19,7 +19,6 @@
     "svg-country-flags": "^1.2.10",
     "web-vitals": "^1.0.1"
   },
-  "main": "firebaseFunctions.js",
   "scripts": {
     "dev": "next",
     "build": "next build",
