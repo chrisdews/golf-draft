@@ -16,6 +16,7 @@ import UsersList from "../../src/components/usersList";
 
 import apiMock from "../../src/hardcodedContent/players";
 import leaderboardMock from "../../src/hardcodedContent/leaderboard";
+import { user } from "firebase-functions/v1/auth";
 
 const useHardCodedContent = process.env.NEXT_PUBLIC_MOCK_ENV === "mock";
 
@@ -227,14 +228,19 @@ const Drafts = () => {
     });
   };
 
-  const startDraft = () => {
-    // setWhosTurn(users[0]);
+  const numberOfRoundsCalc = () => {
+    const userCount = Object.keys(users).length;
+    if (userCount < 2.5) return 12;
+    if (userCount < 3.5) return 10;
+    if (userCount < 6.5) return 8;
+    if (userCount < 10.5) return 6;
+    return 4;
+  };
 
+  const startDraft = () => {
     database
       .ref("drafts/" + draftId + "/picks")
-      .update(createInitialDraftArray(4));
-    //this should be 8 or 12.. configurable later?
-    // get the tournament players
+      .update(createInitialDraftArray(numberOfRoundsCalc()));
 
     setInitialDraftPlayerData();
 
@@ -247,7 +253,6 @@ const Drafts = () => {
       "drafts/" + draftId + "/availablePlayers"
     );
 
-    console.log(Array.isArray(playerEntryList), { playerEntryList });
     availablePlayersRef.update(playerEntryList);
   };
 
@@ -454,7 +459,7 @@ const Drafts = () => {
             </Button>
             {copyClicked && (
               <CheckSquareOutlined
-                style={{ color: "green", "marginLeft": "10px" }}
+                style={{ color: "green", marginLeft: "10px" }}
               />
             )}
           </p>
