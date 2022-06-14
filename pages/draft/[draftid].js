@@ -16,7 +16,6 @@ import UsersList from "../../src/components/usersList";
 
 import apiMock from "../../src/hardcodedContent/players";
 import leaderboardMock from "../../src/hardcodedContent/leaderboard";
-import { user } from "firebase-functions/v1/auth";
 
 const useHardCodedContent = process.env.NEXT_PUBLIC_MOCK_ENV === "mock";
 
