@@ -22,7 +22,7 @@ function LiveLeaderboard({ liveLeaderboard, selectedPlayers }) {
       render: (flagImage) => (
         <img
           alt={flagImage}
-          src={`/img/country-flags-main/svg/${flagImage.toLowerCase()}.svg`}
+          src={`/img/country-flags-main/svg/${flagImage?.toLowerCase()}.svg`}
         />
       ),
     },
@@ -50,11 +50,11 @@ function LiveLeaderboard({ liveLeaderboard, selectedPlayers }) {
     let firstName = liveLeaderboard[i].first_name;
     let lastName = liveLeaderboard[i].last_name;
     let position = liveLeaderboard[i].position;
-    let countryIso = selectedPlayers[i]?.player_country
-      ? countryIsoConverter(selectedPlayers[i]?.player_country)
+    let countryIso = liveLeaderboard[i]?.country
+      ? countryIsoConverter(liveLeaderboard[i]?.country)
       : "";
-    let totalToPar = liveLeaderboard[i].total_to_par;
-    let holes_played = liveLeaderboard[i].holes_played;
+    let totalToPar = liveLeaderboard[i]?.total_to_par;
+    let holes_played = liveLeaderboard[i]?.holes_played;
     let selected =
       selectedPlayers &&
       selectedPlayers.find((selected) => selected.player_id === playerId);
@@ -63,7 +63,7 @@ function LiveLeaderboard({ liveLeaderboard, selectedPlayers }) {
       owner = selected.username;
     }
 
-    if (lastName) {
+    // if (lastName) {
       data.push({
         key: i,
         position: position,
@@ -73,7 +73,7 @@ function LiveLeaderboard({ liveLeaderboard, selectedPlayers }) {
         holesPlayed: holes_played,
         owner: owner,
       });
-    }
+    // }
   }
 
   return (
