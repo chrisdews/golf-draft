@@ -5,7 +5,7 @@ import countryIsoConverter from "../../helpers/countryIsoCoverter";
 function draftHistory({ selectedPlayers }) {
   const columns = [
     {
-      title: "Pick",
+      title: "No",
       dataIndex: "pick",
       width: 20,
     },
@@ -26,7 +26,7 @@ function draftHistory({ selectedPlayers }) {
       render: (flagImage) => (
         <img
           alt={flagImage}
-          src={`/img/country-flags-main/svg/${flagImage}.svg`}
+          src={`/img/country-flags-main/svg/${flagImage.toLowerCase()}.svg`}
         />
       ),
     },

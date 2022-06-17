@@ -5,11 +5,11 @@ import countryIsoConverter from "../../helpers/countryIsoCoverter";
 
 function LiveLeaderboard({ liveLeaderboard, selectedPlayers }) {
   const columns = [
-    {
-      title: "",
-      dataIndex: "position",
-      width: 10,
-    },
+    // {
+    //   title: "",
+    //   dataIndex: "position",
+    //   width: 10,
+    // },
     {
       title: "Player",
       dataIndex: "player",
@@ -22,7 +22,7 @@ function LiveLeaderboard({ liveLeaderboard, selectedPlayers }) {
       render: (flagImage) => (
         <img
           alt={flagImage}
-          src={`/img/country-flags-main/svg/${flagImage}.svg`}
+          src={`/img/country-flags-main/svg/${flagImage.toLowerCase()}.svg`}
         />
       ),
     },
@@ -78,7 +78,7 @@ function LiveLeaderboard({ liveLeaderboard, selectedPlayers }) {
 
   return (
     <>
-      <h3>Available Players</h3>
+      <h3>Live Leaderboard</h3>
       <Table
         columns={columns}
         dataSource={data}

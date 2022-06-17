@@ -58,3 +58,5 @@
       line-height: 28px;
     }
   }
+
+  .ant-table table { font-size: 11px; }
