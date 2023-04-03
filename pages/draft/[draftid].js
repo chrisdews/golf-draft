@@ -19,6 +19,7 @@ import leaderboardMock from "../../src/hardcodedContent/leaderboard";
 
 const useHardCodedContent = process.env.NEXT_PUBLIC_MOCK_ENV === "mock";
 
+
 const Drafts = () => {
   const database = firebaseInit();
   const router = useRouter();

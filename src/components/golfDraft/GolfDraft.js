@@ -13,7 +13,6 @@ import firebaseInit from "../../helpers/firebaseInit";
 
 const useHardCodedContent = process.env.NEXT_PUBLIC_MOCK_ENV === "mock";
 
-
 const database = firebaseInit();
 
 function GolfDraft() {

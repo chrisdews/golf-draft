@@ -26,7 +26,7 @@ function draftHistory({ selectedPlayers }) {
       render: (flagImage) => (
         <img
           alt={flagImage}
-          src={`/img/country-flags-main/svg/${flagImage.toLowerCase()}.svg`}
+          src={`/img/country-flags-main/svg/${flagImage?.toLowerCase()}.svg`}
         />
       ),
     },

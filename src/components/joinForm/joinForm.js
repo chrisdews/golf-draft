@@ -37,8 +37,6 @@ const JoinForm = () => {
       console.log("user needs to log in");
     }
 
-    console.log({ users });
-
     let isExistingUser = false;
 
     for (const id in users) {
@@ -60,7 +58,7 @@ const JoinForm = () => {
   const addUserToDraft = (draftId) => {
     const draftUsers = database.ref("drafts/" + draftId + "/users");
 
-    const newUser = { role: "user", displayName: displayName };
+    const newUser = { role: "user", displayName: displayName, draftOrderWeight: Math.random() };
     draftUsers.child(userId).set(newUser);
   };
 

@@ -11,7 +11,7 @@ const UsersList = ({ users }) => {
         userListArr.push(users[key]);
       }
     }
-    return userListArr;
+    return userListArr.sort((a, b) => a.draftOrderWeight - b.draftOrderWeight);
   };
 
   return (
@@ -22,12 +22,12 @@ const UsersList = ({ users }) => {
         dataSource={displayUsers(users)}
         loading={!!users.length}
         size="small"
-        renderItem={(item) => (
+        renderItem={(item, index) => (
           <List.Item>
             <List.Item.Meta
               avatar={<Avatar src="https://joeschmoe.io/api/v1/random" />}
-              title={<a href="">{item.displayName}</a>}
-              description={<span>{item.role}</span>}
+              title={<a href="">{index + 1}. {item.displayName}</a>}
+              description={<span>{item.role} - order weighting: {item.draftOrderWeight.toFixed(4)}</span>}
             />
           </List.Item>
         )}

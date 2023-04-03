@@ -103,7 +103,7 @@ const CreateForm = () => {
 
     const newDraftId = draft.key;
     const newDraft = database.ref("drafts/" + newDraftId + "/users");
-    newDraft.child(userId).set({ role: "admin", displayName: displayName });
+    newDraft.child(userId).set({ role: "admin", displayName: displayName, draftOrderWeight: Math.random() });
 
     const existingUser = database.ref("users/" + userId);
     existingUser

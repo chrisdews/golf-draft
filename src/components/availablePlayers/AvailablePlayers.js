@@ -24,7 +24,6 @@ function AvailablePlayers({
   const clickHandler = (record, e) => {
     e.preventDefault();
 
-    console.log({ record });
     if (window.confirm(`Are you sure you wish to draft ${record.player}?`)) {
       playerSelectionClick(record.key);
     }
@@ -53,7 +52,7 @@ function AvailablePlayers({
       render: (flagImage) => (
         <img
           alt={flagImage}
-          src={`/img/country-flags-main/svg/${flagImage.toLowerCase()}.svg`}
+          src={`/img/country-flags-main/svg/${flagImage?.toLowerCase()}.svg`}
         />
       ),
     },
