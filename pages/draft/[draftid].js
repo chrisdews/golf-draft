@@ -13,9 +13,11 @@ import AvailablePlayers from "../../src/components/availablePlayers";
 import TournamentInfo from "../../src/components/tournamentInfo";
 import LiveLeaderboard from "../../src/components/liveLeaderboard";
 import UsersList from "../../src/components/usersList";
+import sortUsers from "../../src/helpers/sortUsers";
 
 import apiMock from "../../src/hardcodedContent/players";
 import leaderboardMock from "../../src/hardcodedContent/leaderboard";
+import { useMemo } from "react/cjs/react.production.min";
 
 const useHardCodedContent = process.env.NEXT_PUBLIC_MOCK_ENV === "mock";
 
@@ -48,6 +50,7 @@ const Drafts = () => {
   const [draftInfo, setDraftInfo] = useState({});
   const [draftFinished, setDraftFinished] = useState(false);
   const [copyClicked, setCopyClicked] = useState(false);
+  const [randomiseLoading, setRandomiseLoading] = useState(false);
 
   const { isLoggedIn, userData } = state;
 
@@ -206,30 +209,31 @@ const Drafts = () => {
     let pick = 1;
     let overall = index + 1;
     let team_pick = 1;
-    let userCount = Object.keys(users).length;
+    let userCount = users.length;
 
     round = Math.floor((overall - 1) / userCount + 1);
     pick = ((overall - 1) % userCount) + 1;
     team_pick = round % 2 ? pick : round * userCount - overall + 1;
 
-    return Object.keys(users)[team_pick - 1];
+    return users[team_pick - 1];
   };
 
   const createInitialDraftArray = (roundsNum) => {
-    let picksNum = roundsNum * Object.keys(users).length;
+    let picksNum = roundsNum * users.length;
     return Array.from({ length: picksNum }).map((_, index) => {
-      const id = index + 1;
+      const pickId = index + 1;
+      const { id, displayName } = getCurrentTurnUser(index)
       return {
         id,
-        pick: id,
-        userId: getCurrentTurnUser(index),
-        username: users[getCurrentTurnUser(index)]?.displayName,
+        pick: pickId,
+        userId: id,
+        username: displayName,
       };
     });
   };
 
   const numberOfRoundsCalc = () => {
-    const userCount = Object.keys(users).length;
+    const userCount = users.length;
     if (userCount < 2.5) return 12;
     if (userCount < 3.5) return 10;
     if (userCount < 6.5) return 8;
@@ -323,7 +327,8 @@ const Drafts = () => {
     const userListRef = database.ref("drafts/" + draftId + "/users");
     userListRef.on("value", (snapshot) => {
       const users = snapshot.val();
-      setUsers(users);
+      const sortedusers = sortUsers(users)
+      setUsers(sortedusers);
     });
   };
 
@@ -331,20 +336,21 @@ const Drafts = () => {
     getUsers();
   }, []);
 
-  // set this to <2 after test
-  const disableStartDraft = () => {
+  const adminDraftSettingsCheck = () => {
+    const loggedInDraftUser = users.find((user) => user.id === userData.uid)
+
     if (
       users &&
       userData &&
       userData.uid &&
-      users[userData.uid]?.role !== "admin"
+      loggedInDraftUser?.role !== "admin"
     )
       return true;
 
     if (
       draftStarted ||
       !isLoggedIn ||
-      (users && Object.keys(users)?.length < 1)
+      (users && users?.length < 1)
     )
       return true;
 
@@ -420,17 +426,6 @@ const Drafts = () => {
     );
   };
 
-  const adminResetButton = () => {
-    if (
-      users &&
-      userData &&
-      userData.uid &&
-      users[userData.uid]?.role === "admin"
-    )
-      return <Button onClick={resetDraft}>RESET DRAFT</Button>;
-    return null;
-  };
-
   const copyToClipboard = () => {
     navigator.clipboard.writeText(draftId).then(
       function () {
@@ -441,6 +436,38 @@ const Drafts = () => {
       }
     );
   };
+
+  function iterateWithDelay(users, delay, callback) {
+    const draftRef = database.ref("drafts/" + draftid);
+    let i = 0;
+    const intervalId = setInterval(() => {
+      const userRef = draftRef.child("users").child(users[i].id);
+      userRef.update({ draftOrderWeight: Math.random() });
+
+      i++;
+      if (i === users.length) {
+        clearInterval(intervalId);
+        callback('finished');
+      }
+    }, delay);
+  }
+
+  const randomiseDraftOrder = () => {
+    setRandomiseLoading(true);
+    iterateWithDelay(users, 1000, () => {
+      setRandomiseLoading(false);
+    });
+  }
+
+
+
+  // users.map((user) => {
+  //   setTimeout(() => {
+  //     const draftRef = database.ref("drafts/" + draftid);
+  //     const userRef = draftRef.child("users").child(user.id);
+  //   }, 100)
+  // }
+  // )
 
   return (
     <>
@@ -465,7 +492,7 @@ const Drafts = () => {
           </p>
 
           <Button
-            disabled={disableStartDraft()}
+            disabled={adminDraftSettingsCheck()}
             onClick={() => {
               startDraft();
             }}
@@ -478,6 +505,15 @@ const Drafts = () => {
             }}
           >
             {showLeaderboard ? "Show Draft" : "Show Leaderboard"}
+          </Button>
+          <Button
+            disabled={adminDraftSettingsCheck()}
+            loading={randomiseLoading}
+            onClick={() => {
+              randomiseDraftOrder()
+            }}
+          >
+            Randomise Order
           </Button>
           {!draftStarted && <p>Only the draft admin can start the draft</p>}
 
@@ -514,7 +550,6 @@ const Drafts = () => {
           )}
         </>
       )}
-      {adminResetButton()}
     </>
   );
 };
