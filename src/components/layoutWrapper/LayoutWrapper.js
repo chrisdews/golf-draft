@@ -72,7 +72,6 @@ function LayoutWrapper({ children }) {
       const data = snapshot.val();
 
       if (data) {
-        console.log({ data });
         dispatch({
           type: "SET_USER_DRAFT_DATA",
           payload: data,

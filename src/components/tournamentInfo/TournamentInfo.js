@@ -1,13 +1,23 @@
 import React from "react";
-import PropTypes from "prop-types";
 
-function TournamentInfo({ tournamentInfo }) {
+function TournamentInfo({ nextPgaEvent }) {
+
+  const timeHelper = () => {
+    const time = Date.parse(nextPgaEvent.start_date) - Date.now();
+    if (time < 0) return null
+    const days = Math.ceil(time / (1000 * 60 * 60 * 24));
+    if (days < 1) {
+      return "starts today!";
+    }
+    return `starts in ${days} day${days > 1 ? "s" : ""}...`;
+  }
  
   return (
     <>
-      <h3>{tournamentInfo.name}</h3>
-      <h4>{tournamentInfo.course}</h4>
-      <h5>{tournamentInfo.country}</h5>
+      <h3>{nextPgaEvent.name}</h3>
+      <h4>{nextPgaEvent.course}</h4>
+      <h5>{nextPgaEvent.country}</h5>
+      {timeHelper()}
     </>
   );
 }

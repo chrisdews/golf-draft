@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useRef, useContext } from "react";
-import { Form, Input, Modal, Button, Avatar, Typography, Alert } from "antd";
+import { Form, Input, Modal, Button, Select, Avatar, Typography, Alert } from "antd";
 import { Context } from "../../../context/provider";
 import firebaseInit from "../../helpers/firebaseInit";
 
 import { useRouter } from "next/router";
 
+const { Option } = Select;
 const database = firebaseInit();
 
 const layout = {
@@ -84,21 +85,75 @@ const ModalForm = ({ visible, onCancel }) => {
 
 const CreateForm = () => {
   const [visible, setVisible] = useState(false);
+  const [toursList, setToursList] = useState([])
+  const [tournamentSelectionId, setTournamentSelectionId] = useState(null)
+  const [tournamentList, setTournamentList] = useState([])
   const { state } = useContext(Context);
   const router = useRouter();
 
   const userId = state?.userData?.uid;
   const displayName = state?.userData?.displayName;
 
+  useEffect(() => {
+    getTours();
+  }, []);
+
+  const getTours = async () => {
+    console.log("get tours list called =========");
+    await fetch(
+      `https://golf-leaderboard-data.p.rapidapi.com/tours`,
+      {
+        method: "GET",
+        headers: {
+          "x-rapidapi-key": process.env.NEXT_PUBLIC_API_KEY,
+          "x-rapidapi-host": "golf-leaderboard-data.p.rapidapi.com",
+        },
+      }
+    )
+      .then((res) => res.json())
+      .then((res) => {
+        setToursList(res?.results.filter(tour => tour?.active))
+      })
+      .catch((err) => {
+        // setErrorText(err.toString());
+        console.error(err);
+      });
+  }
+
+  const getTournaments = async (tourSelectionString) => {
+    console.log("get tournaments list called =========");
+    await fetch(
+      `https://golf-leaderboard-data.p.rapidapi.com/fixtures/${tourSelectionString}`,
+      {
+        method: "GET",
+        headers: {
+          "x-rapidapi-key": process.env.NEXT_PUBLIC_API_KEY,
+          "x-rapidapi-host": "golf-leaderboard-data.p.rapidapi.com",
+        },
+      }
+    )
+      .then((res) => res.json())
+      .then((res) => {
+        const filteredResults = res?.results?.filter(tournament => tournament?.type === 'Stroke Play').filter(tournament => Date.parse(tournament?.end_date) > Date.now())
+        setTournamentList(filteredResults)
+      })
+      .catch((err) => {
+        // setErrorText(err.toString());
+        console.error(err);
+      });
+  }
+
   const createDraftGame = (values, userId) => {
     const draftsRef = database.ref("drafts/");
-    const { draftName } = values;
+    const { draftName, tour, tournament } = values;
 
     const draft = draftsRef.push({
       draftName: draftName,
       currentPick: 0,
       draftFinished: false,
       users: "",
+      tourRef: tour,
+      tournamentId: tournament,
     });
 
     const newDraftId = draft.key;
@@ -113,10 +168,6 @@ const CreateForm = () => {
     router.push({
       pathname: `/draft/${newDraftId}`,
     });
-  };
-
-  const showUserModal = () => {
-    setVisible(true);
   };
 
   const hideUserModal = () => {
@@ -140,8 +191,19 @@ const CreateForm = () => {
     );
   };
 
+  const onTourChange = (tourSelectionString) => {
+    setTournamentSelectionId(null)
+    setTournamentList([])
+    getTournaments(tourSelectionString)
+  };
+
+  const onTournamentChange = (value) => {
+    setTournamentSelectionId(value)
+  }
+
   return (
-    <>
+    <div>
+      <>selected tournament id - {tournamentSelectionId}</>
       <Form.Provider
         onFormFinish={(name, { values, forms }) => {
           if (name === "userForm") {
@@ -167,43 +229,35 @@ const CreateForm = () => {
             <Input />
           </Form.Item>
           This will be the visible name your draft pals see when they join. It currently can <b>not</b> be changed.
-          {/* <Form.Item
-            label="User List"
-            shouldUpdate={(prevValues, curValues) =>
-              prevValues.users !== curValues.users
-            }
-          >
-            {({ getFieldValue }) => {
-              const users = getFieldValue("users") || [];
-              return users.length ? (
-                <ul>
-                  {users.map((user, index) => (
-                    <li key={index} className="user">
-                      <Avatar icon={<UserOutlined />} />
-                      {user.name} - {user.email}
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <Typography.Text className="ant-form-text" type="secondary">
-                  ( <SmileOutlined /> No user yet. )
-                </Typography.Text>
-              );
-            }}
-          </Form.Item> */}
+
+          <Form.Item name="tour" label="Tour" rules={[{ required: true }]}>
+            <Select
+              placeholder="Select a Tour"
+              onChange={onTourChange}
+              allowClear
+            >
+              {toursList.map((tour) => <Option value={`${tour.tour_id}/${tour.season_id}`}>
+                {`${tour.tour_name} - ${tour.season_id}`}
+              </Option>)}
+            </Select>
+          </Form.Item>
+
+          <Form.Item name="tournament" label="Tournament" rules={[{ required: true }]}>
+            <Select
+              placeholder="Select a tournament"
+              onChange={onTournamentChange}
+              allowClear
+            >
+   
+              {tournamentList?.map((tournament) => <Option value={`${tournament?.id}`}>
+                {`${tournament.name} starts: ${tournament.start_date}`}
+              </Option>)}
+            </Select>
+          </Form.Item>
           <Form.Item {...tailLayout}>
-            <Button htmlType="submit" type="primary" style={{"margin-top":"20px"}}>
+            <Button htmlType="submit" type="primary" style={{ "margin-top": "20px" }}>
               Submit
             </Button>
-            {/* <Button
-              htmlType="button"
-              style={{
-                margin: "0 8px",
-              }}
-              onClick={showUserModal}
-            >
-              Add User
-            </Button> */}
           </Form.Item>
         </Form>
 
@@ -211,7 +265,8 @@ const CreateForm = () => {
       </Form.Provider>
 
       {loggedOutNotice()}
-    </>
+
+    </div>
   );
 };
 

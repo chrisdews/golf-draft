@@ -140,7 +140,7 @@ const Drafts = () => {
   const getTournamentPlayerData = async () => {
     console.log("get tournament api called ====");
     await fetch(
-      `https://golf-leaderboard-data.p.rapidapi.com/entry-list/${process.env.NEXT_PUBLIC_TOURNAMENT_ID}`,
+      `https://golf-leaderboard-data.p.rapidapi.com/entry-list/${draftInfo?.tournamentId}`,
       {
         method: "GET",
         headers: {
@@ -166,7 +166,7 @@ const Drafts = () => {
     console.log("get leaderboard api called ====");
 
     await fetch(
-      `https://golf-leaderboard-data.p.rapidapi.com/leaderboard/${process.env.NEXT_PUBLIC_TOURNAMENT_ID}`,
+      `https://golf-leaderboard-data.p.rapidapi.com/leaderboard/${draftInfo?.tournamentId}`,
       {
         method: "GET",
         headers: {

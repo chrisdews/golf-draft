@@ -19,28 +19,32 @@ function GolfDraft() {
   const { state, dispatch } = useContext(Context);
 
   const [isLoading, setIsLoading] = useState(true);
-  const [tournamentInfo, setTournamentInfo] = useState([]);
-  const [liveLeaderboard, setLiveLeaderboard] = useState([]);
+  const [nextPgaEvent, setNextPgaEvent] = useState([]);
   const [errorText, setErrorText] = useState();
 
   const { isLoggedIn, userDrafts } = state;
 
+
+  // useEffect(() => {
+  //   if (useHardCodedContent) {
+  //     setTournamentInfo(apiMock.results.tournament);
+  //     let leaderboard = leaderboardMock.leaderboard;
+  //     // setLiveLeaderboard(leaderboard);
+  //     setIsLoading(false);
+  //   } else {
+  //     // getTournamentPlayerData();
+  //     // getTournamentLiveLeaderboard();
+  //   }
+  // }, []);
+
   useEffect(() => {
-    if (useHardCodedContent) {
-      setTournamentInfo(apiMock.results.tournament);
-      let leaderboard = leaderboardMock.leaderboard;
-      setLiveLeaderboard(leaderboard);
-      setIsLoading(false);
-    } else {
-      getTournamentPlayerData();
-      getTournamentLiveLeaderboard();
-    }
+    getNextPgaTourEvent();
   }, []);
 
-  const getTournamentPlayerData = async () => {
-    console.log("get player data called =========");
+  const getNextPgaTourEvent = async () => {
+    console.log("get tours list called =========");
     await fetch(
-      `https://golf-leaderboard-data.p.rapidapi.com/entry-list/${process.env.NEXT_PUBLIC_TOURNAMENT_ID}`,
+      `https://golf-leaderboard-data.p.rapidapi.com/tours`,
       {
         method: "GET",
         headers: {
@@ -51,38 +55,40 @@ function GolfDraft() {
     )
       .then((res) => res.json())
       .then((res) => {
-        setTournamentInfo(res?.results?.tournament);
+        const filterLatestPgaEvent = res?.results?.filter(tour => tour?.active).filter(tour => tour?.tour_name === 'US PGA Tour')?.[0]
+        getNextPgaEvent(filterLatestPgaEvent)
+      })
+      .catch((err) => {
+        // setErrorText(err.toString());
+        console.error(err);
+      });
+  }
+
+  const getNextPgaEvent = async (filterLatestPgaEvent) => {
+    console.log("get tournaments list called =========");
+
+    const { tour_id, season_id } = filterLatestPgaEvent
+    await fetch(
+      `https://golf-leaderboard-data.p.rapidapi.com/fixtures/${tour_id}/${season_id}`,
+      {
+        method: "GET",
+        headers: {
+          "x-rapidapi-key": process.env.NEXT_PUBLIC_API_KEY,
+          "x-rapidapi-host": "golf-leaderboard-data.p.rapidapi.com",
+        },
+      }
+    )
+      .then((res) => res.json())
+      .then((res) => {
+        const filteredResults = res?.results?.filter(tournament => tournament?.type === 'Stroke Play').filter(tournament => Date.parse(tournament?.end_date) > Date.now()).sort((a, b) => Date.parse(a?.start_date) - Date.parse(b?.start_date))?.[0]
+        setNextPgaEvent(filteredResults)
         setIsLoading(false);
       })
       .catch((err) => {
-        setErrorText(err.toString());
+        // setErrorText(err.toString());
         console.error(err);
       });
-  };
-
-  const getTournamentLiveLeaderboard = async () => {
-    console.log("get tournament data called =========");
-
-    await fetch(
-      `https://golf-leaderboard-data.p.rapidapi.com/leaderboard/${process.env.NEXT_PUBLIC_TOURNAMENT_ID}`,
-      {
-        method: "GET",
-        headers: {
-          "x-rapidapi-key": process.env.NEXT_PUBLIC_API_KEY,
-          "x-rapidapi-host": "golf-leaderboard-data.p.rapidapi.com",
-        },
-      }
-    )
-      .then((res) => res.json())
-      .then((res) => {
-        setLiveLeaderboard(res?.results?.leaderboard);
-      })
-      .catch((err) => {
-        console.log({ err }, typeof err);
-        setErrorText(err.toString());
-        console.error(err);
-      });
-  };
+  }
 
   return (
     <div>
@@ -123,7 +129,7 @@ function GolfDraft() {
             </span>
           </Row>
 
-          {!tournamentInfo?.id ? (
+          {!nextPgaEvent?.id ? (
             <Alert
               message="Something went wrong.."
               description="There is no tournament data at this time - possibly because I didn't pay for the data"
@@ -132,10 +138,10 @@ function GolfDraft() {
           ) : (
             <Row gutter={16}>
               <Col className="gutter-row" span={12}>
-                {tournamentInfo?.id && (
+                {nextPgaEvent?.id && (
                   <>
-                    The next tournament is:
-                    <Header tournamentInfo={tournamentInfo} />
+                    The next PGA tournament is:
+                    <Header nextPgaEvent={nextPgaEvent} />
                   </>
                 )}
               </Col>
@@ -151,7 +157,7 @@ function GolfDraft() {
                     "marginRight": "3px",
                     "marginBottom": "3px",
                   }}
-                  disabled={!tournamentInfo?.id}
+                  disabled={isLoading}
                 >
                   Create
                 </Button>

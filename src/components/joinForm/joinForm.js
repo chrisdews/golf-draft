@@ -52,7 +52,7 @@ const JoinForm = () => {
   };
 
   const addDraftToUser = (draftId, draftName) => {
-    userRef.child("drafts").child(draftId).set({role: "user", draftName: draftName})
+    userRef.child("drafts").child(draftId).set({ role: "user", draftName: draftName })
   };
 
   const addUserToDraft = (draftId) => {
@@ -96,37 +96,37 @@ const JoinForm = () => {
   };
 
   return (
-    <Form.Provider
-      onFormFinish={(name, { values, forms }) => {
-        if (name === "userForm") {
-          const { basicForm } = forms;
-          const users = basicForm.getFieldValue("users") || [];
-          basicForm.setFieldsValue({
-            users: [...users, values],
-          });
-        }
-      }}
-    >
-      <Form {...layout} name="basicForm" onFinish={onFinish}>
-        <Form.Item
-          name="draftId"
-          label="Draft ID"
-          rules={[
-            {
-              required: true,
-            },
-          ]}
-        >
-          <Input />
-        </Form.Item>
+      <Form.Provider
+        onFormFinish={(name, { values, forms }) => {
+          if (name === "userForm") {
+            const { basicForm } = forms;
+            const users = basicForm.getFieldValue("users") || [];
+            basicForm.setFieldsValue({
+              users: [...users, values],
+            });
+          }
+        }}
+      >
+        <Form {...layout} name="basicForm" onFinish={onFinish}>
+          <Form.Item
+            name="draftId"
+            label="Draft ID"
+            rules={[
+              {
+                required: true,
+              },
+            ]}
+          >
+            <Input />
+          </Form.Item>
 
-        <Form.Item {...tailLayout}>
-          <Button htmlType="submit" type="primary">
-            JOIN DRAFT
-          </Button>
-        </Form.Item>
-      </Form>
-    </Form.Provider>
+          <Form.Item {...tailLayout}>
+            <Button htmlType="submit" type="primary">
+              JOIN DRAFT
+            </Button>
+          </Form.Item>
+        </Form>
+      </Form.Provider>
   );
 };
 
