@@ -14,7 +14,7 @@ function TournamentInfo({ nextPgaEvent }) {
  
   return (
     <>
-      <h3>{nextPgaEvent.name}</h3>
+      <h3 style={{fontWeight: "800"}}>{nextPgaEvent.name}</h3>
       <h4>{nextPgaEvent.course}</h4>
       <h5>{nextPgaEvent.country}</h5>
       {timeHelper()}

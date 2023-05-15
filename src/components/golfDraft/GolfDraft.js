@@ -10,6 +10,7 @@ import leaderboardMock from "../../hardcodedContent/leaderboard";
 import UserDraftsList from "../../components/userDraftsList";
 import { Context } from "../../../context/provider";
 import firebaseInit from "../../helpers/firebaseInit";
+import FlagIcon from "../flagIcon";
 
 const useHardCodedContent = process.env.NEXT_PUBLIC_MOCK_ENV === "mock";
 
@@ -116,16 +117,25 @@ function GolfDraft() {
             >
               <h1
                 style={{
-                  "fontSize": "50px",
+                  "fontSize": "26px",
                   "marginBottom": "0px",
+                
                   color: "green",
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: "center"
                 }}
               >
-                GOLF DRAFT
+                <span>GOLF</span>
+                <span style={{ display: 'flex', justifyContent: 'center', height: '40px' }}>
+                  <FlagIcon />
+                </span>
+                <span>
+                  DRAFT
+                </span>
               </h1>
               <h5 style={{ "marginBottom": "30px" }}>
-                The simple PGA tour drafting game.
-              </h5>
+                pick the winner              </h5>
             </span>
           </Row>
 
@@ -137,7 +147,7 @@ function GolfDraft() {
             />
           ) : (
             <Row gutter={16}>
-              <Col className="gutter-row" span={12}>
+              <Col className="gutter-row" span={16}>
                 {nextPgaEvent?.id && (
                   <>
                     The next PGA tournament is:

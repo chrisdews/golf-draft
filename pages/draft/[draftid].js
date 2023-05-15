@@ -105,10 +105,10 @@ const Drafts = () => {
       setLiveLeaderboard(leaderboard);
       setIsLoading(false);
     } else {
-      getTournamentPlayerData();
-      getTournamentLiveLeaderboard();
+      draftInfo.tournamentId && getTournamentPlayerData();
+      draftInfo.tournamentId && getTournamentLiveLeaderboard();
     }
-  }, []);
+  }, [draftInfo]);
 
   useEffect(() => {
     getSelectedPlayers();
@@ -139,6 +139,7 @@ const Drafts = () => {
 
   const getTournamentPlayerData = async () => {
     console.log("get tournament api called ====");
+
     await fetch(
       `https://golf-leaderboard-data.p.rapidapi.com/entry-list/${draftInfo?.tournamentId}`,
       {
