@@ -6,6 +6,7 @@ import firebaseInit from "../../helpers/firebaseInit";
 import { Context } from "../../../context/provider";
 import { GoogleOutlined } from "@ant-design/icons";
 import { Button, Layout, Menu, Breadcrumb, Avatar, Image } from "antd";
+import FlagIcon from "../flagIcon";
 
 const database = firebaseInit();
 
@@ -107,8 +108,13 @@ function LayoutWrapper({ children }) {
           <div className="logo" />
           <span>
             <Menu theme="dark" mode="horizontal" defaultSelectedKeys={["1"]}>
-              <Menu.Item key="1">
-                <Link href="/">GOLF DRAFT</Link>
+              <Menu.Item key="1" >
+                <Link href="/"  >
+                  <span style={{height: '64px', display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '8px'}}>
+
+                  <FlagIcon />
+                  </span>
+                </Link>
               </Menu.Item>
 
               <span style={{ display: "flex", justifyContent: "flex-end", width: "100%", alignItems: "center" }}>

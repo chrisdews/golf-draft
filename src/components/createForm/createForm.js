@@ -202,71 +202,76 @@ const CreateForm = () => {
   }
 
   return (
-    <div>
-      <>selected tournament id - {tournamentSelectionId}</>
-      <Form.Provider
-        onFormFinish={(name, { values, forms }) => {
-          if (name === "userForm") {
-            const { basicForm } = forms;
-            const users = basicForm.getFieldValue("users") || [];
-            basicForm.setFieldsValue({
-              users: [...users, values],
-            });
-            setVisible(false);
-          }
-        }}
-      >
-        <Form {...layout} name="basicForm" onFinish={onFinish}>
-          <Form.Item
-            name="draftName"
-            label="Draft Name"
-            rules={[
-              {
-                required: true,
-              },
-            ]}
-          >
-            <Input />
-          </Form.Item>
-          This will be the visible name your draft pals see when they join. It currently can <b>not</b> be changed.
+    <>
 
-          <Form.Item name="tour" label="Tour" rules={[{ required: true }]}>
-            <Select
-              placeholder="Select a Tour"
-              onChange={onTourChange}
-              allowClear
+      <div style={{ maxWidth: '500px', margin: 'auto' }}  >
+        <>selected tournament id - {tournamentSelectionId}</>
+        <Form.Provider
+          onFormFinish={(name, { values, forms }) => {
+            if (name === "userForm") {
+              const { basicForm } = forms;
+              const users = basicForm.getFieldValue("users") || [];
+              basicForm.setFieldsValue({
+                users: [...users, values],
+              });
+              setVisible(false);
+            }
+          }}
+        >
+          <Form {...layout} name="basicForm" onFinish={onFinish}>
+            <Form.Item
+              style={{ margin: '30px 0' }}
+              name="draftName"
+              label="Draft Name"
+              rules={[
+                {
+                  required: true,
+                },
+              ]}
             >
-              {toursList.map((tour) => <Option value={`${tour.tour_id}/${tour.season_id}`}>
-                {`${tour.tour_name} - ${tour.season_id}`}
-              </Option>)}
-            </Select>
-          </Form.Item>
+              <Input />
+            </Form.Item>
 
-          <Form.Item name="tournament" label="Tournament" rules={[{ required: true }]}>
-            <Select
-              placeholder="Select a tournament"
-              onChange={onTournamentChange}
-              allowClear
-            >
-   
-              {tournamentList?.map((tournament) => <Option value={`${tournament?.id}`}>
-                {`${tournament.name} starts: ${tournament.start_date}`}
-              </Option>)}
-            </Select>
-          </Form.Item>
-          <Form.Item {...tailLayout}>
-            <Button htmlType="submit" type="primary" style={{ "margin-top": "20px" }}>
-              Submit
-            </Button>
-          </Form.Item>
-        </Form>
+            <div>
+              This will be the visible name your draft pals see when they join. It currently can <b>not</b> be changed.
+            </div>
 
-        <ModalForm visible={visible} onCancel={hideUserModal} />
-      </Form.Provider>
+            <Form.Item style={{ margin: '30px 0' }} name="tour" label="Tour" rules={[{ required: true }]}>
+              <Select
+                placeholder="Select a Tour"
+                onChange={onTourChange}
+                allowClear
+              >
+                {toursList.map((tour) => <Option value={`${tour.tour_id}/${tour.season_id}`}>
+                  {`${tour.tour_name} - ${tour.season_id}`}
+                </Option>)}
+              </Select>
+            </Form.Item>
 
-      {loggedOutNotice()}
+            <Form.Item name="tournament" label="Tournament" rules={[{ required: true }]}>
+              <Select
+                placeholder="Select a tournament"
+                onChange={onTournamentChange}
+                allowClear
+              >
 
-    </div>
+                {tournamentList?.map((tournament) => <Option value={`${tournament?.id}`}>
+                  {`${tournament.name} starts: ${tournament.start_date}`}
+                </Option>)}
+              </Select>
+            </Form.Item>
+            <Form.Item {...tailLayout}>
+              <Button htmlType="submit" type="primary" style={{ "margin-top": "20px" }}>
+                Submit
+              </Button>
+            </Form.Item>
+          </Form>
+
+          <ModalForm visible={visible} onCancel={hideUserModal} />
+        </Form.Provider>
+        {loggedOutNotice()}
+      </div>
+    </>
   );
 };
 
