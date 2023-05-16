@@ -14,7 +14,7 @@ import FlagIcon from "../flagIcon";
 
 const useHardCodedContent = process.env.NEXT_PUBLIC_MOCK_ENV === "mock";
 
-const database = firebaseInit();
+// const database = firebaseInit();
 
 function GolfDraft() {
   const { state, dispatch } = useContext(Context);
@@ -110,7 +110,7 @@ function GolfDraft() {
               style={{
                 display: "flex",
                 "justifyContent": "center",
-                width: "100vw",
+                width: "100%",
                 "flexDirection": "column",
                 "alignItems": "center",
               }}
@@ -127,7 +127,7 @@ function GolfDraft() {
                 }}
               >
                 <span>GOLF</span>
-                <span style={{ display: 'flex', justifyContent: 'center', height: '40px' }}>
+                <span style={{ display: 'flex', justifyContent: 'center', height: '40px', width: '50px' }}>
                   <FlagIcon />
                 </span>
                 <span>

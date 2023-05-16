@@ -108,7 +108,7 @@ function LayoutWrapper({ children }) {
           <div className="logo" />
           <span>
             <Menu theme="dark" mode="horizontal" defaultSelectedKeys={["1"]}>
-              <Menu.Item key="1" >
+              <Menu.Item key="1" style={{width: '85px'}} >
                 <Link href="/"  >
                   <span style={{height: '64px', display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '8px'}}>
 
