@@ -256,7 +256,7 @@ const CreateForm = () => {
               >
 
                 {tournamentList?.map((tournament) => <Option value={`${tournament?.id}`}>
-                  {`${tournament.name} starts: ${tournament.start_date}`}
+                  {`${tournament?.name} starts: ${tournament?.start_date}`}
                 </Option>)}
               </Select>
             </Form.Item>

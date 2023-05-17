@@ -22,7 +22,6 @@ function GolfDraft() {
   const [isLoading, setIsLoading] = useState(true);
   const [nextPgaEvent, setNextPgaEvent] = useState([]);
   const [errorText, setErrorText] = useState();
-
   const { isLoggedIn, userDrafts } = state;
 
 

@@ -8,7 +8,7 @@
     "@testing-library/user-event": "^12.1.10",
     "antd": "^4.15.6",
     "axios": "^0.21.1",
-    "firebase": "^8.3.2",
+    "firebase": "8.3.2",
     "next": "12.1.6",
     "rc-queue-anim": "^2.0.0",
     "rc-tween-one": "^3.0.6",
