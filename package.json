@@ -25,7 +25,7 @@
     "dev": "next",
     "build": "next build && next export",
     "start": "next start",
-    "deploy": "firebase deploy --only hosting",
+    "deploy": "firebase deploy --only hosting,database,firestore,storage",
     "test": "jest"
   },
   "eslintConfig": {
