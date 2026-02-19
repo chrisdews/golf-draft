@@ -5,6 +5,7 @@ import { Context } from "../../../context/provider"
 import firebaseInit from "../../helpers/firebaseInit"
 import { useRouter } from "next/router"
 import { Tour, Fixture, isAuthenticatedUser } from "../../types"
+import { getTours, getFixtures } from "../../helpers/golfApi"
 
 const { Option } = Select
 const database = firebaseInit()
@@ -85,49 +86,30 @@ const CreateForm = () => {
   const displayName = state.userData.displayName
 
   useEffect(() => {
-    getTours()
+    fetchTours()
   }, [])
 
-  const getTours = async () => {
-    console.log("get tours list called =========")
-    await fetch(`https://golf-leaderboard-data.p.rapidapi.com/tours`, {
-      method: "GET",
-      headers: {
-        "x-rapidapi-key": process.env.NEXT_PUBLIC_API_KEY!,
-        "x-rapidapi-host": "golf-leaderboard-data.p.rapidapi.com",
-      },
-    })
-      .then((res) => res.json())
-      .then((res: { results: Tour[] }) => {
-        setToursList(res?.results.filter((tour) => tour?.active))
-      })
-      .catch((err) => {
-        console.error(err)
-      })
+  const fetchTours = async () => {
+    try {
+      const tours = await getTours()
+      setToursList(tours.filter((tour) => tour?.active))
+    } catch (err) {
+      console.error(err)
+    }
   }
 
   const getTournaments = async (tourSelectionString: string) => {
-    console.log("get tournaments list called =========")
-    await fetch(
-      `https://golf-leaderboard-data.p.rapidapi.com/fixtures/${tourSelectionString}`,
-      {
-        method: "GET",
-        headers: {
-          "x-rapidapi-key": process.env.NEXT_PUBLIC_API_KEY!,
-          "x-rapidapi-host": "golf-leaderboard-data.p.rapidapi.com",
-        },
-      }
-    )
-      .then((res) => res.json())
-      .then((res: { results: Fixture[] }) => {
-        const filteredResults = res?.results
-          ?.filter((tournament) => tournament?.type === 'Stroke Play')
-          .filter((tournament) => Date.parse(tournament?.end_date) > Date.now())
-        setTournamentList(filteredResults)
-      })
-      .catch((err) => {
-        console.error(err)
-      })
+    // tourSelectionString is "{tour_id}/{season_id}" as set by the Select option value
+    const [tourId, seasonId] = tourSelectionString.split('/')
+    try {
+      const fixtures = await getFixtures(tourId, Number(seasonId))
+      const filtered = fixtures
+        .filter((t) => t?.type === 'Stroke Play')
+        .filter((t) => Date.parse(t?.end_date) > Date.now())
+      setTournamentList(filtered)
+    } catch (err) {
+      console.error(err)
+    }
   }
 
   const createDraftGame = (values: CreateFormValues, userId: string) => {
