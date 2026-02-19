@@ -7,7 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ```bash
 pnpm dev          # Start development server (Next.js)
 pnpm build        # Build + export static site (next build && next export)
-pnpm deploy       # Deploy to Firebase Hosting (firebase deploy --only hosting)
+pnpm deploy       # Deploy hosting + security rules (database, firestore, storage)
 pnpm test         # Run Jest tests
 ```
 
