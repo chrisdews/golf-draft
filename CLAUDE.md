@@ -5,12 +5,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Commands
 
 ```bash
-yarn dev          # Start development server (Next.js)
-yarn build        # Build + export static site (next build && next export)
-yarn deploy       # Deploy to Firebase Hosting (firebase deploy --only hosting)
+pnpm dev          # Start development server (Next.js)
+pnpm build        # Build + export static site (next build && next export)
+pnpm deploy       # Deploy to Firebase Hosting (firebase deploy --only hosting)
+pnpm test         # Run Jest tests
 ```
-
-There is no test runner configured (jest is listed in package.json but no test scripts exist).
 
 ## Architecture Overview
 
