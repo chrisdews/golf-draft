@@ -1,5 +1,8 @@
 module.exports = {
-  testEnvironment: 'jsdom',
+  testEnvironment: 'jest-environment-jsdom',
+  testEnvironmentOptions: {
+    url: 'http://localhost',
+  },
   transform: {
     '^.+\\.(js|jsx|ts|tsx)$': 'babel-jest',
   },
