@@ -11,6 +11,7 @@
     "antd": "^4.15.6",
     "axios": "^0.21.1",
     "firebase": "8.3.2",
+    "jest": "^30.2.0",
     "next": "12.1.6",
     "rc-queue-anim": "^2.0.0",
     "rc-tween-one": "^3.0.6",
@@ -49,6 +50,7 @@
     "@types/node": "^25.2.3",
     "@types/react": "17",
     "@types/react-dom": "17",
+    "jest-environment-jsdom": "^30.2.0",
     "typescript": "^5.9.3"
   }
 }
