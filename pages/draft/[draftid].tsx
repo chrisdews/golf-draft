@@ -16,8 +16,7 @@ import LiveLeaderboard from "../../src/components/liveLeaderboard"
 import UsersList from "../../src/components/usersList"
 import sortUsers from "../../src/helpers/sortUsers"
 
-import apiMock from "../../src/hardcodedContent/players"
-import leaderboardMock from "../../src/hardcodedContent/leaderboard"
+import { getEntryList, getLeaderboard } from "../../src/helpers/golfApi"
 
 import {
   DraftUser,
@@ -28,8 +27,6 @@ import {
   LeaderboardEntry,
   isAuthenticatedUser,
 } from "../../src/types"
-
-const useHardCodedContent = process.env.NEXT_PUBLIC_MOCK_ENV === "mock"
 
 const Drafts: NextPage = () => {
   const database = firebaseInit()
@@ -95,16 +92,9 @@ const Drafts: NextPage = () => {
   }, [whosTurn])
 
   useEffect(() => {
-    if (useHardCodedContent) {
-      setTournamentInfo(apiMock.results.tournament as unknown as TournamentInfoType)
-      setPlayerEntryList(Object.assign({}, apiMock.results.entry_list) as unknown as AvailablePlayerMap)
-      setLiveLeaderboard(leaderboardMock.leaderboard)
-      setIsLoading(false)
-    } else {
-      if (draftInfo.tournamentId) {
-        getTournamentPlayerData()
-        getTournamentLiveLeaderboard()
-      }
+    if (draftInfo.tournamentId) {
+      getTournamentPlayerData()
+      getTournamentLiveLeaderboard()
     }
   }, [draftInfo])
 
@@ -137,47 +127,25 @@ const Drafts: NextPage = () => {
   }
 
   const getTournamentPlayerData = async () => {
-    console.log("get tournament api called ====")
-    await fetch(
-      `https://golf-leaderboard-data.p.rapidapi.com/entry-list/${draftInfo?.tournamentId}`,
-      {
-        method: "GET",
-        headers: {
-          "x-rapidapi-key": process.env.NEXT_PUBLIC_API_KEY!,
-          "x-rapidapi-host": "golf-leaderboard-data.p.rapidapi.com",
-        },
-      }
-    )
-      .then((res) => res.json())
-      .then((res: { results: { tournament: TournamentInfoType; entry_list: AvailablePlayerMap } }) => {
-        setTournamentInfo(res.results.tournament)
-        setPlayerEntryList(Object.assign({}, res.results.entry_list) as AvailablePlayerMap)
-        setIsLoading(false)
-      })
-      .catch((err) => {
-        console.error(err)
-      })
+    if (!draftInfo.tournamentId) return
+    try {
+      const { tournament, entry_list } = await getEntryList(draftInfo.tournamentId)
+      setTournamentInfo(tournament)
+      setPlayerEntryList(entry_list)
+      setIsLoading(false)
+    } catch (err) {
+      console.error(err)
+    }
   }
 
   const getTournamentLiveLeaderboard = async () => {
-    console.log("get leaderboard api called ====")
-    await fetch(
-      `https://golf-leaderboard-data.p.rapidapi.com/leaderboard/${draftInfo?.tournamentId}`,
-      {
-        method: "GET",
-        headers: {
-          "x-rapidapi-key": process.env.NEXT_PUBLIC_API_KEY!,
-          "x-rapidapi-host": "golf-leaderboard-data.p.rapidapi.com",
-        },
-      }
-    )
-      .then((res) => res.json())
-      .then((res: { results: { leaderboard: LeaderboardEntry[] } }) => {
-        setLiveLeaderboard(res.results.leaderboard)
-      })
-      .catch((err) => {
-        console.error(err)
-      })
+    if (!draftInfo.tournamentId) return
+    try {
+      const leaderboard = await getLeaderboard(draftInfo.tournamentId)
+      setLiveLeaderboard(leaderboard)
+    } catch (err) {
+      console.error(err)
+    }
   }
 
   const resetDraft = async () => {
